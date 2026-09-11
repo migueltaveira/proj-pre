@@ -1,9 +1,11 @@
 'use client';
 
-import { API_URL } from '@/src/lib/api';
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
+import { API_URL } from '@/src/lib/api';
 
 type Pedido = {
   id: number;
@@ -36,15 +38,14 @@ type Pedido = {
   }[];
 };
 
-export default function PedidoDetalhePage() {
+export default function ImprimirPedidoPage() {
   const params = useParams();
-
   const id = params.id as string;
 
   const [pedido, setPedido] = useState<Pedido | null>(null);
   const [carregando, setCarregando] = useState(true);
-  const [alterandoStatus, setAlterandoStatus] = useState(false);
   const [erro, setErro] = useState('');
+  const [compartilhando, setCompartilhando] = useState(false);
 
   useEffect(() => {
     carregarPedido();
@@ -92,77 +93,113 @@ export default function PedidoDetalhePage() {
     }
   }
 
-  async function alterarStatus(
-    status: 'EM_PRODUCAO' | 'CONCLUIDO' | 'CANCELADO',
-  ) {
-    try {
-      setAlterandoStatus(true);
-      setErro('');
-
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        window.location.href = '/';
-        return;
-      }
-
-      const resposta = await fetch(
-        `${API_URL}/pedidos/${id}/status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            status,
-          }),
-        },
-      );
-
-      const dados = await resposta.json();
-
-      if (!resposta.ok) {
-        setErro(
-          dados.message || 'Erro ao alterar status.',
-        );
-        return;
-      }
-
-      setPedido(dados);
-    } catch {
-      setErro('Não foi possível alterar o status.');
-    } finally {
-      setAlterandoStatus(false);
-    }
-  }
-
   function formatarOP(numero: number) {
     return String(numero).padStart(6, '0');
   }
 
-  function nomeStatus(status: Pedido['status']) {
+  function formatarStatus(status: Pedido['status']) {
     if (status === 'EM_PRODUCAO') {
-      return 'Em produção';
+      return 'EM PRODUÇÃO';
     }
 
     if (status === 'CONCLUIDO') {
-      return 'Concluído';
+      return 'CONCLUÍDO';
     }
 
-    return 'Cancelado';
+    return 'CANCELADO';
   }
 
-  function classeStatus(status: Pedido['status']) {
-    if (status === 'EM_PRODUCAO') {
-      return 'bg-amber-100 text-amber-700';
-    }
+  async function compartilharFicha() {
+    if (!pedido) return;
 
-    if (status === 'CONCLUIDO') {
-      return 'bg-green-100 text-green-700';
-    }
+    try {
+      setCompartilhando(true);
 
-    return 'bg-red-100 text-red-700';
+      const elemento = document.getElementById('ficha-pdf');
+
+      if (!elemento) {
+        alert('Não foi possível localizar a ficha.');
+        return;
+      }
+
+      const canvas = await html2canvas(elemento, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      });
+
+      const imagem = canvas.toDataURL('image/jpeg', 1.0);
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      /*
+        A4 retrato:
+        largura = 210 mm
+        altura = 297 mm
+
+        Metade da folha = 148,5 mm
+      */
+
+      pdf.addImage(
+        imagem,
+        'JPEG',
+        0,
+        0,
+        210,
+        148.5,
+      );
+
+      const nomeArquivo =
+        `OP-${formatarOP(pedido.numeroOP)}.pdf`;
+
+      const pdfBlob = pdf.output('blob');
+
+      const arquivo = new File(
+        [pdfBlob],
+        nomeArquivo,
+        {
+          type: 'application/pdf',
+        },
+      );
+
+      if (
+        navigator.share &&
+        navigator.canShare?.({
+          files: [arquivo],
+        })
+      ) {
+        await navigator.share({
+          title: `Ficha OP ${formatarOP(
+            pedido.numeroOP,
+          )}`,
+          text: 'Ficha de Produção',
+          files: [arquivo],
+        });
+
+        return;
+      }
+
+      pdf.save(nomeArquivo);
+    } catch (erro) {
+      if (
+        erro instanceof DOMException &&
+        erro.name === 'AbortError'
+      ) {
+        return;
+      }
+
+      console.error(erro);
+
+      alert(
+        'Não foi possível gerar ou compartilhar o PDF.',
+      );
+    } finally {
+      setCompartilhando(false);
+    }
   }
 
   if (carregando) {
@@ -184,10 +221,11 @@ export default function PedidoDetalhePage() {
           </p>
 
           <button
+            type="button"
             onClick={() => {
               window.location.href = '/pedidos';
             }}
-            className="btn-voltar-header"
+            className="mt-4 rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white"
           >
             Voltar
           </button>
@@ -197,253 +235,593 @@ export default function PedidoDetalhePage() {
   }
 
   const totalPares = pedido.tamanhos.reduce(
-    (soma, item) => soma + item.quantidade,
+    (total, item) => total + item.quantidade,
     0,
   );
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div>
-            <p className="text-xs text-zinc-500">
-              Ficha de Produção
-            </p>
+    <>
+      <div className="no-print">
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="botao-secundario"
+        >
+          Voltar
+        </button>
 
-            <h1 className="text-xl font-bold text-zinc-900">
-              OP {formatarOP(pedido.numeroOP)}
-            </h1>
-          </div>
+        <button
+          type="button"
+          onClick={compartilharFicha}
+          disabled={compartilhando}
+          className="botao-compartilhar"
+        >
+          {compartilhando
+            ? 'Gerando PDF...'
+            : 'Compartilhar PDF'}
+        </button>
 
-          <button
-            onClick={() => {
-              window.location.href = '/pedidos';
-            }}
-            className="btn-voltar-header"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-6">
-
-        {erro && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {erro}
-          </div>
-        )}
-
-        <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
-            <div>
-              <p className="text-sm text-zinc-500">
-                Ordem de Produção
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-zinc-900">
-                {formatarOP(pedido.numeroOP)}
-              </h2>
-            </div>
-
-            <span
-              className={`w-fit rounded-full px-4 py-2 text-sm font-semibold ${classeStatus(
-                pedido.status,
-              )}`}
-            >
-              {nomeStatus(pedido.status)}
-            </span>
-          </div>
-
-          <div className="mt-6 grid gap-5 border-t border-zinc-100 pt-6 sm:grid-cols-2">
-
-            <div>
-              <p className="text-xs font-medium uppercase text-zinc-400">
-                Cliente
-              </p>
-
-              <p className="mt-1 font-semibold text-zinc-900">
-                {pedido.cliente.nome}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase text-zinc-400">
-                Modelo
-              </p>
-
-              <p className="mt-1 font-semibold text-zinc-900">
-                {pedido.modelo.nome}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase text-zinc-400">
-                Referência
-              </p>
-
-              <p className="mt-1 font-semibold text-zinc-900">
-                {pedido.modelo.referencia || '-'}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase text-zinc-400">
-                Material
-              </p>
-
-              <p className="mt-1 font-semibold text-zinc-900">
-                {pedido.material.nome}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase text-zinc-400">
-                Cor
-              </p>
-
-              <p className="mt-1 font-semibold text-zinc-900">
-                {pedido.cor.nome}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-medium uppercase text-zinc-400">
-                Total
-              </p>
-
-              <p className="mt-1 font-semibold text-zinc-900">
-                {totalPares} pares
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
-
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold text-zinc-900">
-                Numeração
-              </h2>
-
-              <p className="mt-1 text-sm text-zinc-500">
-                Tamanhos e quantidades da ficha.
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-zinc-100 px-4 py-2 text-right">
-              <p className="text-xs text-zinc-500">
-                Total
-              </p>
-
-              <p className="font-bold text-zinc-900">
-                {totalPares} pares
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 overflow-x-auto">
-
-            <div className="flex min-w-max gap-3">
-              {pedido.tamanhos.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-20 overflow-hidden rounded-xl border border-zinc-200"
-                >
-                  <div className="bg-zinc-900 py-2 text-center font-bold text-white">
-                    {item.tamanho}
-                  </div>
-
-                  <div className="py-4 text-center text-xl font-bold text-zinc-900">
-                    {item.quantidade}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </div>
-        </section>
-
-        <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
-
-          <h2 className="text-lg font-semibold text-zinc-900">
-            Observações
-          </h2>
-
-          <p className="mt-3 whitespace-pre-wrap text-sm text-zinc-600">
-            {pedido.observacoes ||
-              'Nenhuma observação cadastrada.'}
-          </p>
-        </section>
-
-        <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
-
-          <h2 className="text-lg font-semibold text-zinc-900">
-            Ações
-          </h2>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-
-            <button
-              type="button"
-              onClick={() => {
-                window.location.href =
-                  `/pedidos/${pedido.id}/imprimir`;
-              }}
-              className="rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white transition hover:bg-zinc-800"
-            >
-              Imprimir
-            </button>
-
-            {pedido.status !== 'CONCLUIDO' && (
-              <button
-                type="button"
-                disabled={alterandoStatus}
-                onClick={() =>
-                  alterarStatus('CONCLUIDO')
-                }
-                className="rounded-xl bg-green-600 px-5 py-3 font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
-              >
-                {alterandoStatus
-                  ? 'Alterando...'
-                  : 'Concluir'}
-              </button>
-            )}
-
-            {pedido.status !== 'CANCELADO' && (
-              <button
-                type="button"
-                disabled={alterandoStatus}
-                onClick={() =>
-                  alterarStatus('CANCELADO')
-                }
-                className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700 disabled:opacity-60"
-              >
-                {alterandoStatus
-                  ? 'Alterando...'
-                  : 'Cancelar'}
-              </button>
-            )}
-
-            {pedido.status !== 'EM_PRODUCAO' && (
-              <button
-                type="button"
-                disabled={alterandoStatus}
-                onClick={() =>
-                  alterarStatus('EM_PRODUCAO')
-                }
-                className="rounded-xl border border-zinc-300 bg-white px-5 py-3 font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-60"
-              >
-                Voltar para produção
-              </button>
-            )}
-
-          </div>
-        </section>
-
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="botao-imprimir"
+        >
+          Imprimir
+        </button>
       </div>
-    </main>
+
+      <main className="pagina-impressao">
+        <section
+          className="ficha"
+          id="ficha-pdf"
+        >
+          <header className="cabecalho">
+            <div>
+              <h1>Pré-Frezado Frederico</h1>
+              <p>Ficha de Produção de Solas</p>
+            </div>
+
+            <div className="op">
+              <span>OP</span>
+
+              <strong>
+                {formatarOP(pedido.numeroOP)}
+              </strong>
+            </div>
+          </header>
+
+          <section className="dados">
+            <div>
+              <span>Cliente</span>
+
+              <strong>
+                {pedido.cliente.nome}
+              </strong>
+            </div>
+
+            <div>
+              <span>Modelo</span>
+
+              <strong>
+                {pedido.modelo.nome}
+              </strong>
+            </div>
+
+            <div>
+              <span>Referência</span>
+
+              <strong>
+                {pedido.modelo.referencia || '-'}
+              </strong>
+            </div>
+
+            <div>
+              <span>Material</span>
+
+              <strong>
+                {pedido.material.nome}
+              </strong>
+            </div>
+
+            <div>
+              <span>Cor</span>
+
+              <strong>
+                {pedido.cor.nome}
+              </strong>
+            </div>
+
+            <div>
+              <span>Status</span>
+
+              <strong>
+                {formatarStatus(pedido.status)}
+              </strong>
+            </div>
+          </section>
+
+          <section className="grade">
+            {pedido.tamanhos.map((item) => (
+              <div
+                className="tamanho"
+                key={item.id}
+              >
+                <div className="numero">
+                  {item.tamanho}
+                </div>
+
+                <div className="quantidade">
+                  {item.quantidade}
+                </div>
+              </div>
+            ))}
+          </section>
+
+          <section className="rodape-ficha">
+            <div className="total-pares">
+              <span>Total</span>
+
+              <strong>{totalPares}</strong>
+
+              <small>pares</small>
+            </div>
+
+            <div className="observacoes">
+              <span>Observações</span>
+
+              <p>
+                {pedido.observacoes || ''}
+              </p>
+            </div>
+          </section>
+        </section>
+      </main>
+
+      <style jsx global>{`
+        * {
+          box-sizing: border-box;
+        }
+
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+
+          background: #e4e4e7;
+
+          font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+        }
+
+        body {
+          color: #18181b;
+        }
+
+        .no-print {
+          display: flex;
+
+          justify-content: center;
+
+          flex-wrap: wrap;
+
+          gap: 10px;
+
+          background: #f4f4f5;
+
+          padding: 14px;
+        }
+
+        .botao-secundario,
+        .botao-compartilhar,
+        .botao-imprimir {
+          border-radius: 10px;
+
+          padding: 10px 18px;
+
+          font-size: 14px;
+          font-weight: 600;
+
+          cursor: pointer;
+
+          transition: 0.2s;
+        }
+
+        .botao-secundario {
+          border: 1px solid #a1a1aa;
+
+          background: white;
+
+          color: #18181b;
+        }
+
+        .botao-secundario:hover {
+          background: #f4f4f5;
+        }
+
+        .botao-compartilhar {
+          border: none;
+
+          background: #2563eb;
+
+          color: white;
+        }
+
+        .botao-compartilhar:hover {
+          background: #1d4ed8;
+        }
+
+        .botao-compartilhar:disabled {
+          opacity: 0.6;
+
+          cursor: not-allowed;
+        }
+
+        .botao-imprimir {
+          border: none;
+
+          background: #18181b;
+
+          color: white;
+        }
+
+        .botao-imprimir:hover {
+          background: #27272a;
+        }
+
+        .pagina-impressao {
+          min-height: 100vh;
+
+          background: #e4e4e7;
+
+          padding: 20px;
+        }
+
+        .ficha {
+          width: 210mm;
+
+          min-height: 148mm;
+
+          margin: 0 auto;
+
+          background: white;
+
+          color: #000000;
+
+          border: 2px solid #000000;
+
+          padding: 6mm;
+
+          font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
+        }
+
+        .cabecalho {
+          display: flex;
+
+          align-items: center;
+
+          justify-content: space-between;
+
+          gap: 8mm;
+
+          border-bottom: 2px solid #000000;
+
+          padding-bottom: 3mm;
+        }
+
+        .cabecalho h1 {
+          margin: 0;
+
+          font-size: 21px;
+
+          font-weight: 700;
+
+          line-height: 1.1;
+        }
+
+        .cabecalho p {
+          margin: 2px 0 0;
+
+          font-size: 13px;
+        }
+
+        .op {
+          min-width: 40mm;
+
+          text-align: center;
+        }
+
+        .op span {
+          display: block;
+
+          margin-bottom: 1mm;
+
+          font-size: 10px;
+
+          font-weight: 700;
+
+          text-transform: uppercase;
+        }
+
+        .op strong {
+          display: block;
+
+          font-size: 25px;
+
+          font-weight: 700;
+
+          line-height: 1;
+        }
+
+        .dados {
+          display: grid;
+
+          grid-template-columns:
+            repeat(3, 1fr);
+
+          gap: 2mm;
+
+          margin-top: 4mm;
+        }
+
+        .dados div {
+          min-height: 14mm;
+
+          border: 1px solid #000000;
+
+          padding: 2.5mm;
+        }
+
+        .dados span {
+          display: block;
+
+          margin-bottom: 1mm;
+
+          font-size: 9px;
+
+          font-weight: 700;
+
+          text-transform: uppercase;
+        }
+
+        .dados strong {
+          display: block;
+
+          font-size: 14px;
+
+          font-weight: 700;
+
+          line-height: 1.15;
+        }
+
+        .grade {
+          display: flex;
+
+          flex-wrap: nowrap;
+
+          gap: 2mm;
+
+          margin-top: 4mm;
+
+          overflow: hidden;
+        }
+
+        .tamanho {
+          flex: 1;
+
+          min-width: 13mm;
+
+          overflow: hidden;
+
+          border: 2px solid #000000;
+
+          text-align: center;
+        }
+
+        .numero {
+          background: #000000;
+
+          color: #ffffff;
+
+          padding: 2mm 1mm;
+
+          font-size: 18px;
+
+          font-weight: 700;
+
+          line-height: 1;
+        }
+
+        .quantidade {
+          padding: 3.5mm 1mm;
+
+          font-size: 22px;
+
+          font-weight: 700;
+
+          line-height: 1;
+        }
+
+        .rodape-ficha {
+          display: grid;
+
+          grid-template-columns:
+            24mm 1fr;
+
+          gap: 3mm;
+
+          margin-top: 4mm;
+        }
+
+        .total-pares {
+          display: flex;
+
+          flex-direction: column;
+
+          align-items: center;
+
+          justify-content: center;
+
+          min-height: 38mm;
+
+          border: 1px solid #000000;
+
+          padding: 2mm;
+
+          text-align: center;
+        }
+
+        .total-pares span {
+          display: block;
+
+          font-size: 8px;
+
+          font-weight: 700;
+
+          text-transform: uppercase;
+        }
+
+        .total-pares strong {
+          display: block;
+
+          margin-top: 1.5mm;
+
+          font-size: 17px;
+
+          font-weight: 700;
+
+          line-height: 1;
+        }
+
+        .total-pares small {
+          display: block;
+
+          margin-top: 1mm;
+
+          font-size: 8px;
+        }
+
+        .observacoes {
+          min-height: 38mm;
+
+          border: 1px solid #000000;
+
+          padding: 3mm;
+        }
+
+        .observacoes span {
+          display: block;
+
+          margin-bottom: 2mm;
+
+          font-size: 9px;
+
+          font-weight: 700;
+
+          text-transform: uppercase;
+        }
+
+        .observacoes p {
+          margin: 0;
+
+          font-size: 12px;
+
+          line-height: 1.35;
+
+          white-space: pre-wrap;
+        }
+
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+
+          html,
+          body {
+            width: 210mm;
+            height: 297mm;
+
+            margin: 0;
+
+            padding: 0;
+
+            background: white;
+          }
+
+          body {
+            overflow: hidden;
+          }
+
+          .pagina-impressao {
+            width: 210mm;
+
+            height: 297mm;
+
+            min-height: 297mm;
+
+            margin: 0;
+
+            padding: 0;
+
+            background: white;
+          }
+
+          .ficha {
+            width: 210mm;
+
+            height: 148.5mm;
+
+            min-height: 148.5mm;
+
+            margin: 0;
+
+            border: none;
+
+            padding: 5mm;
+
+            background: white;
+
+            box-shadow: none;
+          }
+
+          .ficha * {
+            color: #000000 !important;
+
+            border-color: #000000 !important;
+
+            box-shadow: none !important;
+
+            text-shadow: none !important;
+          }
+
+          .numero {
+            background: #000000 !important;
+
+            color: #ffffff !important;
+
+            -webkit-print-color-adjust: exact;
+
+            print-color-adjust: exact;
+          }
+        }
+
+        @media screen and (max-width: 900px) {
+          .pagina-impressao {
+            overflow-x: auto;
+
+            padding: 12px;
+          }
+        }
+      `}</style>
+    </>
   );
 }
