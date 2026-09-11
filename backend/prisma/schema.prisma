@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id           Int           @id @default(autoincrement())
+  nome         String
+  usuario      String        @unique
+  senha        String
+  perfil       PerfilUsuario @default(USUARIO)
+  ativo        Boolean       @default(true)
+  criadoEm     DateTime      @default(now())
+  atualizadoEm DateTime      @updatedAt
+}
+
+model Cliente {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  documento    String?
+  telefone     String?
+  observacoes  String?
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  pedidos Pedido[]
+}
+
+model Cor {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  pedidos Pedido[]
+}
+
+model Material {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  pedidos Pedido[]
+}
+
+model Modelo {
+  id           Int      @id @default(autoincrement())
+  nome         String
+  referencia   String?
+  ativo        Boolean  @default(true)
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+
+  pedidos Pedido[]
+}
+
+model Pedido {
+  id       Int @id @default(autoincrement())
+  numeroOP Int @unique
+
+  clienteId Int
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+
+  modeloId Int
+  modelo   Modelo @relation(fields: [modeloId], references: [id])
+
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id])
+
+  corId Int
+  cor   Cor @relation(fields: [corId], references: [id])
+
+  status StatusPedido @default(EM_PRODUCAO)
+
+  observacoes String?
+
+  tamanhos PedidoTamanho[]
+
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model PedidoTamanho {
+  id       Int    @id @default(autoincrement())
+  pedidoId Int
+  pedido   Pedido @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+
+  tamanho    Int
+  quantidade Int
+}
+
+enum PerfilUsuario {
+  ADMIN
+  USUARIO
+}
+
+enum StatusPedido {
+  EM_PRODUCAO
+  CONCLUIDO
+  CANCELADO
+}
