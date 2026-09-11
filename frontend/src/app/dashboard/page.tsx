@@ -162,28 +162,21 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen bg-zinc-100">
 
-      <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-
+      <header className="app-header">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
           <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Pré-Frezado Frederico
-            </h1>
-
-            <p className="text-xs text-zinc-500">
-              Controle de Produção
-            </p>
+            <h1>Pré-Frezado Frederico</h1>
+            <p>Controle de Produção</p>
           </div>
 
           <button
             onClick={sair}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
+            className="btn-sair"
           >
             Sair
           </button>
         </div>
       </header>
-
       <div className="mx-auto max-w-6xl px-4 py-6">
 
         <section className="mb-6">
@@ -205,7 +198,7 @@ export default function Dashboard() {
         <section>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="app-card p-5">
               <p className="text-sm text-zinc-500">
                 Total de fichas
               </p>
@@ -215,7 +208,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="app-card p-5">
               <p className="text-sm text-zinc-500">
                 Em produção
               </p>
@@ -225,7 +218,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="app-card p-5">
               <p className="text-sm text-zinc-500">
                 Concluídas
               </p>
@@ -235,7 +228,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="app-card p-5">
               <p className="text-sm text-zinc-500">
                 Canceladas
               </p>

@@ -1,9 +1,8 @@
 'use client';
 
-import { API_URL } from '@/src/lib/api';
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { API_URL } from '@/src/lib/api';
 
 type Pedido = {
   id: number;
@@ -43,6 +42,7 @@ export default function ImprimirPedidoPage() {
   const [pedido, setPedido] = useState<Pedido | null>(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
+  const [compartilhando, setCompartilhando] = useState(false);
 
   useEffect(() => {
     carregarPedido();
@@ -50,6 +50,8 @@ export default function ImprimirPedidoPage() {
 
   async function carregarPedido() {
     try {
+      setErro('');
+
       const token = localStorage.getItem('token');
 
       if (!token) {
@@ -69,6 +71,7 @@ export default function ImprimirPedidoPage() {
       if (resposta.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
+
         window.location.href = '/';
         return;
       }
@@ -78,6 +81,7 @@ export default function ImprimirPedidoPage() {
       }
 
       const dados = await resposta.json();
+
       setPedido(dados);
     } catch {
       setErro('Não foi possível carregar a ficha.');
@@ -91,23 +95,100 @@ export default function ImprimirPedidoPage() {
   }
 
   function formatarStatus(status: Pedido['status']) {
-    if (status === 'EM_PRODUCAO') return 'EM PRODUÇÃO';
-    if (status === 'CONCLUIDO') return 'CONCLUÍDO';
+    if (status === 'EM_PRODUCAO') {
+      return 'EM PRODUÇÃO';
+    }
+
+    if (status === 'CONCLUIDO') {
+      return 'CONCLUÍDO';
+    }
+
     return 'CANCELADO';
+  }
+
+  async function compartilharFicha() {
+    if (!pedido) {
+      return;
+    }
+
+    try {
+      setCompartilhando(true);
+
+      const titulo = `Ficha OP ${formatarOP(
+        pedido.numeroOP,
+      )}`;
+
+      const texto =
+        `Ficha de Produção\n` +
+        `OP: ${formatarOP(pedido.numeroOP)}\n` +
+        `Cliente: ${pedido.cliente.nome}\n` +
+        `Modelo: ${pedido.modelo.nome}\n` +
+        `Material: ${pedido.material.nome}\n` +
+        `Cor: ${pedido.cor.nome}`;
+
+      const url = window.location.href;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: titulo,
+          text: texto,
+          url,
+        });
+
+        return;
+      }
+
+      await navigator.clipboard.writeText(url);
+
+      alert(
+        'O compartilhamento nativo não está disponível neste navegador. O link da ficha foi copiado.',
+      );
+    } catch (erro) {
+      if (
+        erro instanceof DOMException &&
+        erro.name === 'AbortError'
+      ) {
+        return;
+      }
+
+      console.error(erro);
+
+      alert(
+        'Não foi possível compartilhar a ficha.',
+      );
+    } finally {
+      setCompartilhando(false);
+    }
   }
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        Carregando...
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100">
+        <p className="text-zinc-500">
+          Carregando ficha...
+        </p>
       </main>
     );
   }
 
   if (!pedido) {
     return (
-      <main className="p-6">
-        {erro || 'Ficha não encontrada.'}
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4">
+        <div className="text-center">
+          <p className="text-zinc-700">
+            {erro || 'Ficha não encontrada.'}
+          </p>
+
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = '/pedidos';
+            }}
+            className="mt-4 rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white"
+          >
+            Voltar
+          </button>
+        </div>
       </main>
     );
   }
@@ -119,17 +200,30 @@ export default function ImprimirPedidoPage() {
 
   return (
     <>
-      <div className="no-print flex justify-center gap-3 bg-zinc-100 p-4">
+      <div className="no-print">
         <button
+          type="button"
           onClick={() => window.history.back()}
-          className="rounded-lg border border-zinc-300 bg-white px-5 py-2 font-medium"
+          className="botao-secundario"
         >
           Voltar
         </button>
 
         <button
+          type="button"
+          onClick={compartilharFicha}
+          disabled={compartilhando}
+          className="botao-compartilhar"
+        >
+          {compartilhando
+            ? 'Abrindo...'
+            : 'Compartilhar'}
+        </button>
+
+        <button
+          type="button"
           onClick={() => window.print()}
-          className="rounded-lg bg-zinc-900 px-5 py-2 font-semibold text-white"
+          className="botao-imprimir"
         >
           Imprimir
         </button>
@@ -145,64 +239,89 @@ export default function ImprimirPedidoPage() {
 
             <div className="op">
               <span>OP</span>
-              <strong>{formatarOP(pedido.numeroOP)}</strong>
+              <strong>
+                {formatarOP(pedido.numeroOP)}
+              </strong>
             </div>
           </header>
 
           <section className="dados">
             <div>
               <span>Cliente</span>
-              <strong>{pedido.cliente.nome}</strong>
+              <strong>
+                {pedido.cliente.nome}
+              </strong>
             </div>
 
             <div>
               <span>Modelo</span>
-              <strong>{pedido.modelo.nome}</strong>
+              <strong>
+                {pedido.modelo.nome}
+              </strong>
             </div>
 
             <div>
               <span>Referência</span>
-              <strong>{pedido.modelo.referencia || '-'}</strong>
+              <strong>
+                {pedido.modelo.referencia || '-'}
+              </strong>
             </div>
 
             <div>
               <span>Material</span>
-              <strong>{pedido.material.nome}</strong>
+              <strong>
+                {pedido.material.nome}
+              </strong>
             </div>
 
             <div>
               <span>Cor</span>
-              <strong>{pedido.cor.nome}</strong>
+              <strong>
+                {pedido.cor.nome}
+              </strong>
             </div>
 
             <div>
               <span>Status</span>
-              <strong>{formatarStatus(pedido.status)}</strong>
+              <strong>
+                {formatarStatus(pedido.status)}
+              </strong>
             </div>
           </section>
 
           <section className="grade">
             {pedido.tamanhos.map((item) => (
-              <div className="tamanho" key={item.id}>
-                <div className="numero">{item.tamanho}</div>
-                <div className="quantidade">{item.quantidade}</div>
+              <div
+                className="tamanho"
+                key={item.id}
+              >
+                <div className="numero">
+                  {item.tamanho}
+                </div>
+
+                <div className="quantidade">
+                  {item.quantidade}
+                </div>
               </div>
             ))}
           </section>
 
-          <section className="resumo">
-            <div>
+          <section className="rodape-ficha">
+            <div className="total-pares">
               <span>Total</span>
-              <strong>{totalPares} pares</strong>
+
+              <strong>{totalPares}</strong>
+
+              <small>pares</small>
             </div>
-          </section>
 
-          <section className="observacoes">
-            <span>Observações</span>
+            <div className="observacoes">
+              <span>Observações</span>
 
-            <p>
-              {pedido.observacoes || ''}
-            </p>
+              <p>
+                {pedido.observacoes || ''}
+              </p>
+            </div>
           </section>
         </section>
       </main>
@@ -212,148 +331,335 @@ export default function ImprimirPedidoPage() {
           box-sizing: border-box;
         }
 
+        html,
         body {
           margin: 0;
+          padding: 0;
+          background: #e4e4e7;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+          color: #18181b;
+        }
+
+        .no-print {
+          display: flex;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 10px;
+
+          background: #f4f4f5;
+
+          padding: 14px;
+        }
+
+        .botao-secundario,
+        .botao-compartilhar,
+        .botao-imprimir {
+          border-radius: 10px;
+
+          padding: 10px 18px;
+
+          font-size: 14px;
+          font-weight: 600;
+
+          cursor: pointer;
+
+          transition: 0.2s;
+        }
+
+        .botao-secundario {
+          border: 1px solid #a1a1aa;
+
+          background: white;
+
+          color: #18181b;
+        }
+
+        .botao-secundario:hover {
+          background: #f4f4f5;
+        }
+
+        .botao-compartilhar {
+          border: none;
+
+          background: #2563eb;
+
+          color: white;
+        }
+
+        .botao-compartilhar:hover {
+          background: #1d4ed8;
+        }
+
+        .botao-compartilhar:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .botao-imprimir {
+          border: none;
+
+          background: #18181b;
+
+          color: white;
+        }
+
+        .botao-imprimir:hover {
+          background: #27272a;
         }
 
         .pagina-impressao {
           min-height: 100vh;
+
           background: #e4e4e7;
+
           padding: 20px;
         }
 
         .ficha {
           width: 210mm;
           min-height: 148mm;
+
           margin: 0 auto;
+
           background: white;
+
           border: 2px solid #18181b;
-          padding: 7mm;
+
+          padding: 6mm;
+
           color: #18181b;
+
           font-family: Arial, Helvetica, sans-serif;
         }
 
         .cabecalho {
           display: flex;
-          justify-content: space-between;
+
           align-items: center;
+          justify-content: space-between;
+
+          gap: 8mm;
+
           border-bottom: 2px solid #18181b;
-          padding-bottom: 4mm;
+
+          padding-bottom: 3mm;
         }
 
         .cabecalho h1 {
           margin: 0;
-          font-size: 22px;
+
+          font-size: 21px;
+          font-weight: 700;
+
+          line-height: 1.1;
         }
 
         .cabecalho p {
           margin: 2px 0 0;
-          font-size: 14px;
+
+          font-size: 13px;
         }
 
         .op {
+          min-width: 40mm;
+
           text-align: center;
-          min-width: 42mm;
         }
 
         .op span {
           display: block;
-          font-size: 12px;
-          font-weight: bold;
+
+          margin-bottom: 1mm;
+
+          font-size: 10px;
+          font-weight: 700;
+
+          text-transform: uppercase;
         }
 
         .op strong {
           display: block;
-          font-size: 26px;
+
+          font-size: 25px;
+          font-weight: 700;
+
+          line-height: 1;
         }
 
         .dados {
           display: grid;
+
           grid-template-columns: repeat(3, 1fr);
+
           gap: 2mm;
+
           margin-top: 4mm;
         }
 
         .dados div {
+          min-height: 14mm;
+
           border: 1px solid #52525b;
+
           padding: 2.5mm;
-          min-height: 15mm;
         }
 
-        .dados span,
-        .resumo span,
-        .observacoes span {
+        .dados span {
           display: block;
-          font-size: 10px;
+
+          margin-bottom: 1mm;
+
+          font-size: 9px;
+          font-weight: 700;
+
           text-transform: uppercase;
-          font-weight: bold;
-          margin-bottom: 2px;
         }
 
         .dados strong {
-          font-size: 15px;
+          display: block;
+
+          font-size: 14px;
+          font-weight: 700;
+
+          line-height: 1.15;
         }
 
         .grade {
           display: flex;
-          gap: 2mm;
-          margin-top: 5mm;
+
           flex-wrap: nowrap;
+
+          gap: 2mm;
+
+          margin-top: 4mm;
+
           overflow: hidden;
         }
 
         .tamanho {
           flex: 1;
-          min-width: 14mm;
+
+          min-width: 13mm;
+
+          overflow: hidden;
+
           border: 2px solid #18181b;
+
           text-align: center;
         }
 
         .numero {
           background: #18181b;
+
           color: white;
-          font-size: 18px;
-          font-weight: bold;
+
           padding: 2mm 1mm;
+
+          font-size: 18px;
+          font-weight: 700;
+
+          line-height: 1;
         }
 
         .quantidade {
+          padding: 3.5mm 1mm;
+
           font-size: 22px;
-          font-weight: bold;
-          padding: 4mm 1mm;
+          font-weight: 700;
+
+          line-height: 1;
         }
 
-        .resumo {
-          display: flex;
-          justify-content: flex-end;
+        .rodape-ficha {
+          display: grid;
+
+          grid-template-columns: 24mm 1fr;
+
+          gap: 3mm;
+
           margin-top: 4mm;
         }
 
-        .resumo div {
+        .total-pares {
+          display: flex;
+
+          flex-direction: column;
+
+          align-items: center;
+          justify-content: center;
+
+          min-height: 38mm;
+
           border: 1px solid #52525b;
-          width: 45mm;
-          padding: 2.5mm;
+
+          padding: 2mm;
+
+          text-align: center;
         }
 
-        .resumo strong {
-          font-size: 18px;
+        .total-pares span {
+          display: block;
+
+          font-size: 8px;
+          font-weight: 700;
+
+          text-transform: uppercase;
+        }
+
+        .total-pares strong {
+          display: block;
+
+          margin-top: 1.5mm;
+
+          font-size: 17px;
+          font-weight: 700;
+
+          line-height: 1;
+        }
+
+        .total-pares small {
+          display: block;
+
+          margin-top: 1mm;
+
+          font-size: 8px;
         }
 
         .observacoes {
-          margin-top: 4mm;
+          min-height: 38mm;
+
           border: 1px solid #52525b;
-          min-height: 28mm;
+
           padding: 3mm;
         }
 
+        .observacoes span {
+          display: block;
+
+          margin-bottom: 2mm;
+
+          font-size: 9px;
+          font-weight: 700;
+
+          text-transform: uppercase;
+        }
+
         .observacoes p {
-          margin: 4px 0 0;
-          font-size: 13px;
+          margin: 0;
+
+          font-size: 12px;
+
+          line-height: 1.35;
+
           white-space: pre-wrap;
         }
 
         @page {
           size: A5 landscape;
+
           margin: 0;
         }
 
@@ -366,27 +672,80 @@ export default function ImprimirPedidoPage() {
           body {
             width: 210mm;
             height: 148mm;
+
             margin: 0;
+
             padding: 0;
+
             background: white;
+          }
+
+          body {
+            overflow: hidden;
           }
 
           .pagina-impressao {
             width: 210mm;
             height: 148mm;
+
             min-height: 148mm;
+
             margin: 0;
+
             padding: 0;
+
             background: white;
           }
 
           .ficha {
             width: 210mm;
             height: 148mm;
+
             min-height: 148mm;
+
             margin: 0;
+
             border: none;
-            padding: 6mm;
+
+            padding: 5mm;
+
+            box-shadow: none;
+          }
+
+          .cabecalho {
+            padding-bottom: 2.5mm;
+          }
+
+          .dados {
+            margin-top: 3mm;
+          }
+
+          .grade {
+            margin-top: 3.5mm;
+          }
+
+          .rodape-ficha {
+            margin-top: 3.5mm;
+          }
+
+          .observacoes {
+            min-height: 39mm;
+          }
+
+          .total-pares {
+            min-height: 39mm;
+          }
+        }
+
+        @media screen and (max-width: 900px) {
+          .pagina-impressao {
+            overflow-x: auto;
+
+            padding: 12px;
+          }
+
+          .ficha {
+            transform-origin: top left;
           }
         }
       `}</style>

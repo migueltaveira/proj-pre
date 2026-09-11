@@ -117,7 +117,7 @@ export default function ClientesPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -133,7 +133,7 @@ export default function ClientesPage() {
             onClick={() => {
               window.location.href = '/dashboard';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -157,7 +157,7 @@ export default function ClientesPage() {
               window.location.href =
                 '/clientes/novo';
             }}
-            className="w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white sm:w-auto"
+            className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
             + Novo cliente
           </button>
@@ -193,7 +193,7 @@ export default function ClientesPage() {
             {clientesFiltrados.map((cliente) => (
               <div
                 key={cliente.id}
-                className="rounded-2xl bg-white p-5 shadow-sm"
+                className="app-card p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 

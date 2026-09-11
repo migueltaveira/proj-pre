@@ -67,7 +67,7 @@ export default function NovoClientePage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -176,7 +176,7 @@ export default function NovoClientePage() {
             <button
               type="submit"
               disabled={salvando}
-              className="w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-primary w-full px-5 py-3 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {salvando ? 'Salvando...' : 'Salvar cliente'}
             </button>

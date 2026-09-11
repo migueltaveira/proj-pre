@@ -81,7 +81,7 @@ export default function PedidosPage() {
       setPedidos(dados);
     } catch {
       setErro(
-        'NÃ£o foi possÃ­vel carregar os pedidos.',
+        'Não foi possí­vel carregar os pedidos.',
       );
     } finally {
       setCarregando(false);
@@ -94,11 +94,11 @@ export default function PedidosPage() {
 
   function nomeStatus(status: Pedido['status']) {
     if (status === 'EM_PRODUCAO') {
-      return 'Em produÃ§Ã£o';
+      return 'Em produção';
     }
 
     if (status === 'CONCLUIDO') {
-      return 'ConcluÃ­do';
+      return 'Concluído';
     }
 
     return 'Cancelado';
@@ -118,7 +118,7 @@ export default function PedidosPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -126,7 +126,7 @@ export default function PedidosPage() {
             </h1>
 
             <p className="text-xs text-zinc-500">
-              PrÃ©-Frezado Frederico
+              Pré-Frezado Frederico
             </p>
           </div>
 
@@ -134,7 +134,7 @@ export default function PedidosPage() {
             onClick={() => {
               window.location.href = '/dashboard';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -145,7 +145,7 @@ export default function PedidosPage() {
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-zinc-900">
-              Fichas de produÃ§Ã£o
+              Fichas de produção
             </h2>
 
             <p className="mt-1 text-sm text-zinc-500">
@@ -157,7 +157,7 @@ export default function PedidosPage() {
             onClick={() => {
               window.location.href = '/pedidos/novo';
             }}
-            className="w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white sm:w-auto"
+            className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
             + Nova ficha
           </button>

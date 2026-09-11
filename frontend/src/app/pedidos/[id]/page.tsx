@@ -203,7 +203,7 @@ export default function PedidoDetalhePage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
             <p className="text-xs text-zinc-500">

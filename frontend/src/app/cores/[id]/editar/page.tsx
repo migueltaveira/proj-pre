@@ -110,7 +110,7 @@ export default function EditarCorPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -126,7 +126,7 @@ export default function EditarCorPage() {
             onClick={() => {
               window.location.href = '/cores';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>

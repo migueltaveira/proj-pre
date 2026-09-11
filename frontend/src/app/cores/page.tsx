@@ -55,7 +55,7 @@ export default function CoresPage() {
 
       setCores(dados);
     } catch {
-      setErro('NÃ£o foi possÃ­vel carregar as cores.');
+      setErro('Não foi possÃ­vel carregar as cores.');
     } finally {
       setCarregando(false);
     }
@@ -94,7 +94,7 @@ export default function CoresPage() {
 
       await carregarCores();
     } catch {
-      setErro('NÃ£o foi possÃ­vel inativar a cor.');
+      setErro('Não foi possÃ­vel inativar a cor.');
     }
   }
 
@@ -106,7 +106,7 @@ export default function CoresPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -114,7 +114,7 @@ export default function CoresPage() {
             </h1>
 
             <p className="text-xs text-zinc-500">
-              PrÃ©-Frezado Frederico
+              Pré-Frezado Frederico
             </p>
           </div>
 
@@ -122,7 +122,7 @@ export default function CoresPage() {
             onClick={() => {
               window.location.href = '/dashboard';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -145,7 +145,7 @@ export default function CoresPage() {
             onClick={() => {
               window.location.href = '/cores/novo';
             }}
-            className="w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white sm:w-auto"
+            className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
             + Nova cor
           </button>
@@ -179,7 +179,7 @@ export default function CoresPage() {
             {coresFiltradas.map((cor) => (
               <div
                 key={cor.id}
-                className="rounded-2xl bg-white p-5 shadow-sm"
+                className="app-card p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">

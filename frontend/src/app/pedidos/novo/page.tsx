@@ -150,7 +150,7 @@ export default function NovoPedidoPage() {
       );
     } catch {
       setErro(
-        'NÃ£o foi possÃ­vel carregar os cadastros.',
+        'Não foi possí­vel carregar os cadastros.',
       );
     } finally {
       setCarregando(false);
@@ -262,7 +262,7 @@ export default function NovoPedidoPage() {
         `/pedidos/${dados.id}`;
     } catch {
       setErro(
-        'NÃ£o foi possÃ­vel criar a ficha.',
+        'Não foi possí­vel criar a ficha.',
       );
     } finally {
       setSalvando(false);
@@ -281,7 +281,7 @@ export default function NovoPedidoPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -289,7 +289,7 @@ export default function NovoPedidoPage() {
             </h1>
 
             <p className="text-xs text-zinc-500">
-              PrÃ©-Frezado Frederico
+              Pré-Frezado Frederico
             </p>
           </div>
 
@@ -299,7 +299,7 @@ export default function NovoPedidoPage() {
               window.location.href =
                 '/pedidos';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -444,11 +444,11 @@ export default function NovoPedidoPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-zinc-900">
-                  NumeraÃ§Ã£o
+                  Numeração
                 </h2>
 
                 <p className="mt-1 text-sm text-zinc-500">
-                  Informe somente os tamanhos necessÃ¡rios.
+                  Informe somente os tamanhos necessários.
                 </p>
               </div>
 
@@ -500,7 +500,7 @@ export default function NovoPedidoPage() {
 
           <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
             <label className="mb-2 block text-sm font-medium text-zinc-700">
-              ObservaÃ§Ãµes
+              Observações
             </label>
 
             <textarea
@@ -511,7 +511,7 @@ export default function NovoPedidoPage() {
                 )
               }
               rows={5}
-              placeholder="InformaÃ§Ãµes adicionais da ficha"
+              placeholder="Informações adicionais da ficha"
               className="w-full resize-none rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
             />
           </section>
@@ -529,7 +529,7 @@ export default function NovoPedidoPage() {
           >
             {salvando
               ? 'Criando ficha...'
-              : 'Criar ficha de produÃ§Ã£o'}
+              : 'Criar ficha de produção'}
           </button>
         </form>
       </div>

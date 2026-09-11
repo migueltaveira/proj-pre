@@ -46,7 +46,7 @@ export default function MateriaisPage() {
 
       setMateriais(await resposta.json());
     } catch {
-      setErro('NÃ£o foi possÃ­vel carregar os materiais.');
+      setErro('Não foi possí­vel carregar os materiais.');
     } finally {
       setCarregando(false);
     }
@@ -76,7 +76,7 @@ export default function MateriaisPage() {
 
       await carregarMateriais();
     } catch {
-      setErro('NÃ£o foi possÃ­vel inativar o material.');
+      setErro('Não foi possí­vel inativar o material.');
     }
   }
 
@@ -86,16 +86,16 @@ export default function MateriaisPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">Materiais</h1>
-            <p className="text-xs text-zinc-500">PrÃ©-Frezado Frederico</p>
+            <p className="text-xs text-zinc-500">Pré-Frezado Frederico</p>
           </div>
 
           <button
             onClick={() => (window.location.href = '/dashboard')}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -138,7 +138,7 @@ export default function MateriaisPage() {
             {materiaisFiltrados.map((material) => (
               <div
                 key={material.id}
-                className="rounded-2xl bg-white p-5 shadow-sm"
+                className="app-card p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export default function MateriaisPage() {
                         (window.location.href =
                           `/materiais/${material.id}/editar`)
                       }
-                      className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+                      className="btn-voltar"
                     >
                       Editar
                     </button>

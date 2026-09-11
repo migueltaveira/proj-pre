@@ -64,7 +64,7 @@ export default function NovoModeloPage() {
       window.location.href = '/modelos';
     } catch {
       setErro(
-        'NÃ£o foi possÃ­vel salvar o modelo.',
+        'Não foi possí­vel salvar o modelo.',
       );
     } finally {
       setSalvando(false);
@@ -73,7 +73,7 @@ export default function NovoModeloPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -81,7 +81,7 @@ export default function NovoModeloPage() {
             </h1>
 
             <p className="text-xs text-zinc-500">
-              PrÃ©-Frezado Frederico
+              Pré-Frezado Frederico
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export default function NovoModeloPage() {
               window.location.href =
                 '/modelos';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -128,7 +128,7 @@ export default function NovoModeloPage() {
                 htmlFor="referencia"
                 className="mb-2 block text-sm font-medium text-zinc-700"
               >
-                ReferÃªncia
+                Referência
               </label>
 
               <input

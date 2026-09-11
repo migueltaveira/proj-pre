@@ -48,7 +48,7 @@ export default function ModelosPage() {
       const dados = await resposta.json();
       setModelos(dados);
     } catch {
-      setErro('NÃ£o foi possÃ­vel carregar os modelos.');
+      setErro('Não foi possí­vel carregar os modelos.');
     } finally {
       setCarregando(false);
     }
@@ -82,7 +82,7 @@ export default function ModelosPage() {
 
       await carregarModelos();
     } catch {
-      setErro('NÃ£o foi possÃ­vel inativar o modelo.');
+      setErro('Não foi possí­vel inativar o modelo.');
     }
   }
 
@@ -101,7 +101,7 @@ export default function ModelosPage() {
 
   return (
     <main className="min-h-screen bg-zinc-100">
-      <header className="border-b border-zinc-200 bg-white">
+      <header className="app-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <div>
             <h1 className="text-xl font-bold text-zinc-900">
@@ -109,7 +109,7 @@ export default function ModelosPage() {
             </h1>
 
             <p className="text-xs text-zinc-500">
-              PrÃ©-Frezado Frederico
+              Pré-Frezado Frederico
             </p>
           </div>
 
@@ -117,7 +117,7 @@ export default function ModelosPage() {
             onClick={() => {
               window.location.href = '/dashboard';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm"
+            className="btn-voltar"
           >
             Voltar
           </button>
@@ -140,7 +140,7 @@ export default function ModelosPage() {
             onClick={() => {
               window.location.href = '/modelos/novo';
             }}
-            className="w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white sm:w-auto"
+            className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
             + Novo modelo
           </button>
@@ -150,7 +150,7 @@ export default function ModelosPage() {
           <input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar modelo ou referÃªncia..."
+            placeholder="Buscar modelo ou referência..."
             className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none sm:max-w-md"
           />
         </div>
@@ -174,7 +174,7 @@ export default function ModelosPage() {
             {modelosFiltrados.map((modelo) => (
               <div
                 key={modelo.id}
-                className="rounded-2xl bg-white p-5 shadow-sm"
+                className="app-card p-5"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -198,7 +198,7 @@ export default function ModelosPage() {
 
                     {modelo.referencia && (
                       <p className="mt-2 text-sm text-zinc-500">
-                        ReferÃªncia: {modelo.referencia}
+                        Referência: {modelo.referencia}
                       </p>
                     )}
                   </div>
