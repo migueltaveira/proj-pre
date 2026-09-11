@@ -187,7 +187,7 @@ export default function PedidoDetalhePage() {
             onClick={() => {
               window.location.href = '/pedidos';
             }}
-            className="mt-4 rounded-xl bg-zinc-900 px-5 py-3 text-white"
+            className="btn-voltar-header"
           >
             Voltar
           </button>
@@ -219,7 +219,7 @@ export default function PedidoDetalhePage() {
             onClick={() => {
               window.location.href = '/pedidos';
             }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
+            className="btn-voltar-header"
           >
             Voltar
           </button>

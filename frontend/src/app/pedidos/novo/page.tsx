@@ -299,7 +299,7 @@ export default function NovoPedidoPage() {
               window.location.href =
                 '/pedidos';
             }}
-            className="btn-voltar"
+            className="btn-voltar-header"
           >
             Voltar
           </button>

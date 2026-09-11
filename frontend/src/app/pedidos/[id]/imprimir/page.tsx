@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { API_URL } from '@/src/lib/api';
 
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
 type Pedido = {
   id: number;
   numeroOP: number;
@@ -107,42 +110,69 @@ export default function ImprimirPedidoPage() {
   }
 
   async function compartilharFicha() {
-    if (!pedido) {
-      return;
-    }
+    if (!pedido) return;
 
     try {
       setCompartilhando(true);
 
-      const titulo = `Ficha OP ${formatarOP(
-        pedido.numeroOP,
-      )}`;
+      const elemento = document.getElementById('ficha-pdf');
 
-      const texto =
-        `Ficha de Produção\n` +
-        `OP: ${formatarOP(pedido.numeroOP)}\n` +
-        `Cliente: ${pedido.cliente.nome}\n` +
-        `Modelo: ${pedido.modelo.nome}\n` +
-        `Material: ${pedido.material.nome}\n` +
-        `Cor: ${pedido.cor.nome}`;
+      if (!elemento) {
+        alert('Não foi possível localizar a ficha.');
+        return;
+      }
 
-      const url = window.location.href;
+      const canvas = await html2canvas(elemento, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      });
 
-      if (navigator.share) {
+      const imagem = canvas.toDataURL('image/jpeg', 1.0);
+
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a5',
+      });
+
+      pdf.addImage(
+        imagem,
+        'JPEG',
+        0,
+        0,
+        210,
+        148,
+      );
+
+      const nomeArquivo = `OP-${formatarOP(pedido.numeroOP)}.pdf`;
+
+      const pdfBlob = pdf.output('blob');
+
+      const arquivo = new File(
+        [pdfBlob],
+        nomeArquivo,
+        {
+          type: 'application/pdf',
+        },
+      );
+
+      if (
+        navigator.share &&
+        navigator.canShare?.({
+          files: [arquivo],
+        })
+      ) {
         await navigator.share({
-          title: titulo,
-          text: texto,
-          url,
+          title: `Ficha OP ${formatarOP(pedido.numeroOP)}`,
+          text: 'Ficha de Produção',
+          files: [arquivo],
         });
 
         return;
       }
 
-      await navigator.clipboard.writeText(url);
-
-      alert(
-        'O compartilhamento nativo não está disponível neste navegador. O link da ficha foi copiado.',
-      );
+      pdf.save(nomeArquivo);
     } catch (erro) {
       if (
         erro instanceof DOMException &&
@@ -154,7 +184,7 @@ export default function ImprimirPedidoPage() {
       console.error(erro);
 
       alert(
-        'Não foi possível compartilhar a ficha.',
+        'Não foi possível gerar ou compartilhar o PDF.',
       );
     } finally {
       setCompartilhando(false);
@@ -184,7 +214,7 @@ export default function ImprimirPedidoPage() {
             onClick={() => {
               window.location.href = '/pedidos';
             }}
-            className="mt-4 rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white"
+            className="btn-voltar-header"
           >
             Voltar
           </button>
@@ -204,7 +234,7 @@ export default function ImprimirPedidoPage() {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="botao-secundario"
+          className=".btn-voltar-header"
         >
           Voltar
         </button>
@@ -230,7 +260,7 @@ export default function ImprimirPedidoPage() {
       </div>
 
       <main className="pagina-impressao">
-        <section className="ficha">
+        <section className="ficha" id="ficha-pdf">
           <header className="cabecalho">
             <div>
               <h1>Pré-Frezado Frederico</h1>
