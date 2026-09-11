@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { API_URL } from '@/src/lib/api';
 
