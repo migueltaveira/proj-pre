@@ -59,7 +59,7 @@ export default function Home() {
     <main className="login-page">
       <aside className="login-intro">
         <span className="brand-mark" aria-hidden="true">PF<span>.</span></span>
-        <div><h2>Cada detalhe conta.<br />Cada pedido também.</h2><p>Organize suas fichas e acompanhe cada etapa da produção em um só lugar.</p></div>
+        <p>Organize suas fichas e acompanhe cada etapa da produção em um só lugar.</p>
         <small>PRÉ-FREZADO FREDERICO · CONTROLE DE PRODUÇÃO</small>
       </aside>
       <section className="login-content" aria-label="Acesso ao sistema">
