@@ -27,8 +27,8 @@ button.app-card:hover { border-color: #8fb8c0; box-shadow: 0 4px 16px #1832390a;
 .app-input::placeholder { color: #819397; }
 .app-input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px #22879a18; }
 textarea.app-input { min-height: 110px; resize: vertical; }
-.skip-link { position: fixed; top: -100px; left: 16px; z-index: 100; padding: 12px; background: white; }
-.skip-link:focus { top: 12px; }
+.skip-link { position: fixed; top: 12px; left: 16px; z-index: 100; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); background: white; }
+.skip-link:focus { width: auto; height: auto; padding: 12px; clip-path: none; }
 .login-page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: #f7f9f8; }
 .login-intro { padding: clamp(32px, 6vw, 96px); background: #123e49; color: white; display: flex; flex-direction: column; justify-content: space-between; gap: 64px; }
 .login-intro .brand-mark { background: #ffffff15; width: 60px; height: 60px; font-size: 27px; }

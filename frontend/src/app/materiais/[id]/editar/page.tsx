@@ -1,5 +1,8 @@
 'use client';
 
+import { Form } from '@/src/components/form';
+import { ErrorMessage } from '@/src/components/error-message';
+
 import { useLoadData } from '@/src/hooks/use-load-data';
 
 import { useRouter } from 'next/navigation';
@@ -118,7 +121,7 @@ export default function EditarMaterialPage() {
       <AppHeader title="Editar material" backHref="/materiais" />
 
       <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
-        <form
+        <Form
           onSubmit={salvar}
           className="app-card p-5  sm:p-8"
         >
@@ -154,11 +157,7 @@ export default function EditarMaterialPage() {
             </label>
           </div>
 
-          {erro && (
-            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {erro}
-            </div>
-          )}
+          <ErrorMessage message={erro} />
 
           <button
             type="submit"
@@ -169,7 +168,7 @@ export default function EditarMaterialPage() {
               ? 'Salvando...'
               : 'Salvar alterações'}
           </button>
-        </form>
+        </Form>
       </div>
     </main>
   );

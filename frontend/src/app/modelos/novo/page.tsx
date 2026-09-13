@@ -1,5 +1,8 @@
 'use client';
 
+import { Form } from '@/src/components/form';
+import { ErrorMessage } from '@/src/components/error-message';
+
 import { useRouter } from 'next/navigation';
 
 import { AppHeader } from '@/src/components/app-header';
@@ -81,7 +84,7 @@ export default function NovoModeloPage() {
       <AppHeader title="Novo modelo" backHref="/modelos" />
 
       <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
-        <form
+        <Form
           onSubmit={salvar}
           className="app-card p-5  sm:p-8"
         >
@@ -126,11 +129,7 @@ export default function NovoModeloPage() {
             </div>
           </div>
 
-          {erro && (
-            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {erro}
-            </div>
-          )}
+          <ErrorMessage message={erro} />
 
           <button
             type="submit"
@@ -141,7 +140,7 @@ export default function NovoModeloPage() {
               ? 'Salvando...'
               : 'Salvar modelo'}
           </button>
-        </form>
+        </Form>
       </div>
     </main>
   );

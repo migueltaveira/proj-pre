@@ -273,7 +273,7 @@ export default function ImprimirPedidoPage() {
         </button>
       </div>
 
-      <main className="pagina-impressao">
+      <main className="pagina-impressao" tabIndex={0} aria-label="Prévia da ficha de produção. Em telas pequenas, deslize horizontalmente para ver a ficha completa.">
         <section
           className="ficha"
           id="ficha-pdf"
@@ -818,6 +818,7 @@ export default function ImprimirPedidoPage() {
         }
 
         @media screen and (max-width: 900px) {
+          .no-print button { min-height: 48px; flex: 1 1 140px; }
           .pagina-impressao {
             overflow-x: auto;
 

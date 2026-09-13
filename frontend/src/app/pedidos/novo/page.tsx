@@ -1,10 +1,16 @@
 'use client';
 
+import { Form } from '@/src/components/form';
+import { ErrorMessage } from '@/src/components/error-message';
+
 import { useLoadData } from '@/src/hooks/use-load-data';
 
 import { useRouter } from 'next/navigation';
 
 import { AppHeader } from '@/src/components/app-header';
+
+import { validarQuantidades } from '@/src/lib/validar-pedido';
+import Link from 'next/link';
 
 import { API_URL } from '@/src/lib/api';
 
@@ -55,8 +61,11 @@ export default function NovoPedidoPage() {
     useState(false);
 
   const [erro, setErro] = useState('');
+  const [erroCadastros, setErroCadastros] = useState('');
 
   const carregarCadastros = useCallback(async () => {
+    setCarregando(true);
+    setErroCadastros('');
     try {
       const token = localStorage.getItem('token');
 
@@ -151,8 +160,8 @@ export default function NovoPedidoPage() {
         ),
       );
     } catch {
-      setErro(
-        'Não foi possível carregar os cadastros.',
+      setErroCadastros(
+        'Não foi possível carregar os cadastros. Verifique sua conexão e tente novamente.',
       );
     } finally {
       setCarregando(false);
@@ -167,7 +176,7 @@ export default function NovoPedidoPage() {
     ).reduce((soma, valor) => {
       const numero = Number(valor);
 
-      return soma + (numero || 0);
+      return soma + (Number.isSafeInteger(numero) && numero > 0 ? numero : 0);
     }, 0);
   }, [quantidades]);
 
@@ -175,13 +184,6 @@ export default function NovoPedidoPage() {
     tamanho: number,
     valor: string,
   ) {
-    if (
-      valor !== '' &&
-      Number(valor) < 0
-    ) {
-      return;
-    }
-
     setQuantidades((anterior) => ({
       ...anterior,
       [tamanho]: valor,
@@ -192,6 +194,12 @@ export default function NovoPedidoPage() {
     e: React.FormEvent,
   ) {
     e.preventDefault();
+    if (salvando) return;
+    const erroQuantidade = validarQuantidades(quantidades);
+    if (erroQuantidade) {
+      setErro(erroQuantidade);
+      return;
+    }
 
     try {
       setErro('');
@@ -252,20 +260,24 @@ export default function NovoPedidoPage() {
         return;
       }
 
-      const dados = await resposta.json();
+      const dados = await resposta.json().catch(() => null);
 
       if (!resposta.ok) {
         setErro(
-          dados.message ||
-            'Erro ao criar ficha.',
+          (Array.isArray(dados?.message) ? dados.message.join(' ') : dados?.message) ||
+            'Não foi possível criar a ficha. Tente novamente em alguns instantes.',
         );
         return;
       }
 
+      if (!dados?.id) {
+        setErro('O servidor não retornou o número da ficha. Confira a lista de pedidos antes de tentar novamente.');
+        return;
+      }
       router.push(`/pedidos/${dados.id}`);
     } catch {
       setErro(
-        'Não foi possível criar a ficha.',
+        'Não foi possível confirmar a criação da ficha. Verifique sua conexão e confira a lista de pedidos antes de tentar novamente.',
       );
     } finally {
       setSalvando(false);
@@ -287,10 +299,27 @@ export default function NovoPedidoPage() {
       <AppHeader title="Nova ficha" backHref="/pedidos" />
 
       <div id="conteudo" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6">
-        <form
+        {erroCadastros ? (
+          <section className="app-card p-5">
+            <ErrorMessage message={erroCadastros} />
+            <button type="button" className="btn-primary" onClick={carregarCadastros}>Tentar novamente</button>
+          </section>
+        ) : [clientes, modelos, materiais, cores].some((items) => items.length === 0) ? (
+          <section className="app-card p-5">
+            <h2 className="text-lg font-semibold">Faltam cadastros para criar a ficha</h2>
+            <p className="mt-2 text-sm">Cadastre pelo menos uma opção ativa em cada categoria abaixo e volte para criar o pedido.</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {!clientes.length && <Link className="btn-voltar" href="/clientes/novo">Cadastrar cliente</Link>}
+              {!modelos.length && <Link className="btn-voltar" href="/modelos/novo">Cadastrar modelo</Link>}
+              {!materiais.length && <Link className="btn-voltar" href="/materiais/novo">Cadastrar material</Link>}
+              {!cores.length && <Link className="btn-voltar" href="/cores/novo">Cadastrar cor</Link>}
+            </div>
+          </section>
+        ) : <Form
           onSubmit={salvar}
-          className="space-y-6"
+          className="space-y-6" aria-busy={salvando}
         >
+          <p className="text-sm text-zinc-600">Os campos com * são obrigatórios. Informe também a quantidade de pelo menos um tamanho.</p>
           <section className="app-card p-5  sm:p-8">
             <h2 className="text-lg font-semibold text-zinc-900">
               Dados da ficha
@@ -298,12 +327,10 @@ export default function NovoPedidoPage() {
 
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-700">
-                  Cliente *
+                <label htmlFor="clienteId" className="mb-2 block text-sm font-medium text-zinc-700">Cliente *
                 </label>
 
-                <select
-                  value={clienteId}
+                <select id="clienteId" value={clienteId}
                   onChange={(e) =>
                     setClienteId(
                       e.target.value,
@@ -328,12 +355,10 @@ export default function NovoPedidoPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-700">
-                  Modelo *
+                <label htmlFor="modeloId" className="mb-2 block text-sm font-medium text-zinc-700">Modelo *
                 </label>
 
-                <select
-                  value={modeloId}
+                <select id="modeloId" value={modeloId}
                   onChange={(e) =>
                     setModeloId(
                       e.target.value,
@@ -361,12 +386,10 @@ export default function NovoPedidoPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-700">
-                  Material *
+                <label htmlFor="materialId" className="mb-2 block text-sm font-medium text-zinc-700">Material *
                 </label>
 
-                <select
-                  value={materialId}
+                <select id="materialId" value={materialId}
                   onChange={(e) =>
                     setMaterialId(
                       e.target.value,
@@ -391,12 +414,10 @@ export default function NovoPedidoPage() {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-700">
-                  Cor *
+                <label htmlFor="corId" className="mb-2 block text-sm font-medium text-zinc-700">Cor *
                 </label>
 
-                <select
-                  value={corId}
+                <select id="corId" value={corId}
                   onChange={(e) =>
                     setCorId(e.target.value)
                   }
@@ -450,13 +471,17 @@ export default function NovoPedidoPage() {
                     key={tamanho}
                     className="overflow-hidden rounded-xl border border-zinc-200"
                   >
-                    <div className="btn-primary py-2 text-center font-semibold">
+                    <label htmlFor={`quantidade-${tamanho}`} className="size-label">
                       {tamanho}
-                    </div>
+                    </label>
 
                     <input
+                      id={`quantidade-${tamanho}`}
+                      aria-label={`Quantidade do tamanho ${tamanho}`}
                       type="number"
                       min="0"
+                      step="1"
+                      max={Number.MAX_SAFE_INTEGER}
                       inputMode="numeric"
                       value={
                         quantidades[
@@ -470,7 +495,7 @@ export default function NovoPedidoPage() {
                         )
                       }
                       placeholder="0"
-                      className="app-input"
+                      className="app-input size-input"
                     />
                   </div>
                 ),
@@ -479,11 +504,11 @@ export default function NovoPedidoPage() {
           </section>
 
           <section className="app-card p-5  sm:p-8">
-            <label className="mb-2 block text-sm font-medium text-zinc-700">
-              Observações
+            <label htmlFor="observacoes" className="mb-2 block text-sm font-medium text-zinc-700">Observações
             </label>
 
             <textarea
+              id="observacoes"
               value={observacoes}
               onChange={(e) =>
                 setObservacoes(
@@ -496,12 +521,10 @@ export default function NovoPedidoPage() {
             />
           </section>
 
-          {erro && (
-            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {erro}
-            </div>
-          )}
+          <ErrorMessage message={erro} />
 
+          <div className="order-submit">
+          <p aria-live="polite">{totalPares} pares no pedido</p>
           <button
             type="submit"
             disabled={salvando}
@@ -511,7 +534,8 @@ export default function NovoPedidoPage() {
               ? 'Criando ficha...'
               : 'Criar ficha de produção'}
           </button>
-        </form>
+          </div>
+        </Form>}
       </div>
     </main>
   );

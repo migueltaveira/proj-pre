@@ -1,5 +1,8 @@
 'use client';
 
+import { Form } from '@/src/components/form';
+import { ErrorMessage } from '@/src/components/error-message';
+
 import { useRouter } from 'next/navigation';
 
 import { useState } from 'react';
@@ -81,7 +84,7 @@ export default function Home() {
             Entre com seus dados para continuar
           </p>
 
-          <form onSubmit={entrar} className="mt-6 space-y-5">
+          <Form onSubmit={entrar} className="mt-6 space-y-5">
             <div>
               <label
                 htmlFor="usuario"
@@ -122,11 +125,7 @@ export default function Home() {
               />
             </div>
 
-            {erro && (
-              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                {erro}
-              </div>
-            )}
+            <ErrorMessage message={erro} />
 
             <button
               type="submit"
@@ -135,7 +134,7 @@ export default function Home() {
             >
               {carregando ? 'Entrando...' : 'Entrar'}
             </button>
-          </form>
+          </Form>
         </div>
 
         <p className="mt-6 text-center text-xs text-zinc-400">

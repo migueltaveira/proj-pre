@@ -1,0 +1,122 @@
+/* Touch targets and fluid content apply to every administrative screen. */
+.app-page {
+  min-height: 100dvh;
+}
+
+.app-page #conteudo,
+.app-card,
+.app-card > div,
+.brand > span:last-child {
+  min-width: 0;
+}
+
+.app-card {
+  overflow-wrap: anywhere;
+}
+
+.app-page button,
+.app-nav a,
+.btn-primary,
+.btn-voltar,
+.btn-sair {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+.app-input {
+  max-width: 100%;
+  min-height: 48px;
+  font-size: 16px;
+}
+
+.app-input[aria-invalid="true"] {
+  border-color: #b42318;
+  box-shadow: 0 0 0 1px #b42318;
+}
+
+.form-error {
+  margin-block: 16px;
+  padding: 16px;
+  border: 1px solid #f4b4ae;
+  border-radius: 12px;
+  background: #fff2f0;
+  color: #8f2119;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  scroll-margin-block: 24px;
+}
+
+.form-error strong { display: block; }
+.form-error p { margin-top: 4px; }
+.form-error ul { margin-top: 8px; }
+.form-error button {
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.size-label {
+  display: block;
+  padding: 10px;
+  background: #e5f1f1;
+  color: var(--primary);
+  text-align: center;
+  font-weight: 700;
+}
+
+.size-input {
+  border: 0;
+  border-radius: 0;
+  text-align: center;
+}
+
+.order-submit {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.order-submit p { flex: 1; white-space: nowrap; font-weight: 700; }
+.order-submit .btn-primary { flex: 2; }
+
+@media (max-width: 639px) {
+  .header-content { gap: 8px; padding-block: 12px; }
+  .brand { font-size: 12px; }
+  .brand-mark { flex-shrink: 0; width: 36px; height: 36px; }
+  .brand small { font-size: 8px; letter-spacing: .08em; }
+  .btn-sair { flex-shrink: 0; font-size: 12px; padding-inline: 10px; }
+
+  .app-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+  }
+  .app-nav a { display: grid; place-items: center; padding: 8px 4px; font-size: 13px; }
+  .page-heading { padding-block: 16px; }
+  .page-heading p { display: none; }
+  .page-heading h1 { font-size: 23px; }
+  .page-heading .btn-voltar { flex-shrink: 0; }
+
+  .app-page #conteudo { padding: 16px 12px 28px; }
+  .app-page .app-card { padding: 16px; }
+  .app-page .app-card .flex { flex-wrap: wrap; }
+  .app-page input[type="checkbox"] { width: 24px; height: 24px; }
+  .app-page label:has(input[type="checkbox"]) { min-height: 44px; }
+  .order-submit { flex-wrap: wrap; gap: 12px; }
+  .order-submit p, .order-submit .btn-primary { flex-basis: 100%; }
+  .order-submit .btn-primary { min-height: 52px; font-size: 16px; }
+  .login-intro { padding: 20px 24px; gap: 16px; }
+  .login-intro .brand-mark { width: 40px; height: 40px; font-size: 22px; }
+  .login-intro h2 { font-size: 26px; }
+  .login-content { padding: 24px 16px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .app-input { scroll-margin-block: 24px; }
+}
