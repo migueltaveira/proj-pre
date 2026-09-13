@@ -41,6 +41,16 @@ src/
 
 ## Manutenção
 
+### Gestão de usuários
+
+Acesse **Usuários** no menu com o login `admin` (perfil `ADMIN`). A tela permite cadastrar contas comuns, buscar por nome/login, editar dados, redefinir senhas e ativar ou inativar acessos. Na edição, deixe a senha em branco para mantê-la.
+
+O login `admin` não pode ser renomeado ou inativado. Novas contas recebem o perfil `USUARIO`; não podem acessar a gestão. O menu consulta `/usuarios/me` e a página confirma a autorização na API. As rotas `GET /usuarios`, `POST /usuarios` e `PATCH /usuarios/:id` também exigem autenticação e autorização no backend.
+
+As senhas são armazenadas com bcrypt e não retornam nas respostas. O backend confere a situação atual da conta a cada requisição autenticada, bloqueando sessões de usuários inativados. Não é necessária uma migração: a funcionalidade usa a tabela `Usuario` existente. Reinicie o backend após atualizar o código.
+
+### Padrões de implementação
+
 - Altere a paleta em `styles/tokens.css` e os estilos compartilhados em `styles/components.css`.
 - Use `AppHeader` nas telas administrativas. O conteúdo deve ter `id="conteudo"` e `tabIndex={-1}` para o atalho de teclado do cabeçalho.
 - Use `app-page`, `app-card`, `app-input`, `btn-primary` e `btn-voltar` para manter a aparência consistente. Tailwind complementa espaçamento e disposição.
