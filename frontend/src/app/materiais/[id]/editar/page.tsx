@@ -1,106 +1,173 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 export default function EditarMaterialPage() {
+  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
   const [nome, setNome] = useState('');
   const [ativo, setAtivo] = useState(true);
+
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregar();
-  }, []);
+  const carregarMaterial = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
 
-  async function carregar() {
-    const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/');
+        return;
+      }
 
-    const resposta = await fetch(
-      `${API_URL}/materiais/${id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const resposta = await fetch(
+        `${API_URL}/materiais/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      },
-    );
+      );
 
-    const dados = await resposta.json();
+      if (!resposta.ok) {
+        throw new Error();
+      }
 
-    setNome(dados.nome);
-    setAtivo(dados.ativo);
-    setCarregando(false);
-  }
+      const material = await resposta.json();
+
+      setNome(material.nome || '');
+      setAtivo(material.ativo);
+    } catch {
+      setErro('Não foi possível carregar o material.');
+    } finally {
+      setCarregando(false);
+    }
+  }, [id, router]);
+
+  useLoadData(carregarMaterial);
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
-    setSalvando(true);
 
-    const token = localStorage.getItem('token');
+    try {
+      setSalvando(true);
+      setErro('');
 
-    await fetch(
-      `${API_URL}/materiais/${id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        router.push('/');
+        return;
+      }
+
+      const resposta = await fetch(
+        `${API_URL}/materiais/${id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nome,
+            ativo,
+          }),
         },
-        body: JSON.stringify({
-          nome,
-          ativo,
-        }),
-      },
-    );
+      );
 
-    window.location.href = '/materiais';
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setErro(
+          dados.message ||
+            'Erro ao atualizar o material.',
+        );
+        return;
+      }
+
+      router.push('/materiais');
+    } catch {
+      setErro('Não foi possível atualizar o material.');
+    } finally {
+      setSalvando(false);
+    }
   }
 
   if (carregando) {
-    return <main className="p-6">Carregando...</main>;
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-100">
+        Carregando...
+      </main>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100 p-4">
-      <div className="mx-auto max-w-2xl">
+    <main className="app-page">
+      <AppHeader title="Editar material" backHref="/materiais" />
+
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
         <form
           onSubmit={salvar}
-          className="rounded-2xl bg-white p-6 shadow-sm"
+          className="app-card p-5  sm:p-8"
         >
-          <h1 className="mb-6 text-2xl font-bold">
-            Editar material
-          </h1>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-zinc-700">
+              Nome do material *
+            </label>
 
-          <label className="mb-2 block text-sm font-medium">
-            Nome
-          </label>
-
-          <input
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            required
-            className="w-full rounded-xl border px-4 py-3"
-          />
-
-          <label className="mt-5 flex items-center gap-3">
             <input
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              required
+              className="app-input"
+            />
+          </div>
+
+          <div className="mt-5 flex items-center gap-3 rounded-xl bg-zinc-50 p-4">
+            <input
+              id="ativo"
               type="checkbox"
               checked={ativo}
-              onChange={(e) => setAtivo(e.target.checked)}
+              onChange={(e) =>
+                setAtivo(e.target.checked)
+              }
+              className="h-5 w-5"
             />
-            Material ativo
-          </label>
+
+            <label
+              htmlFor="ativo"
+              className="font-medium text-zinc-700"
+            >
+              Material ativo
+            </label>
+          </div>
+
+          {erro && (
+            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {erro}
+            </div>
+          )}
 
           <button
+            type="submit"
             disabled={salvando}
-            className="mt-6 w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white"
+            className="btn-primary mt-6 w-full   px-5 py-3 font-semibold  disabled:opacity-60"
           >
-            Salvar alterações
+            {salvando
+              ? 'Salvando...'
+              : 'Salvar alterações'}
           </button>
         </form>
       </div>

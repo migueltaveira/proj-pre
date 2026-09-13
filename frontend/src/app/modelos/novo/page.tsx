@@ -1,10 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
 import { useState } from 'react';
 
 export default function NovoModeloPage() {
+  const router = useRouter();
   const [nome, setNome] = useState('');
   const [referencia, setReferencia] = useState('');
   const [erro, setErro] = useState('');
@@ -22,7 +27,7 @@ export default function NovoModeloPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -46,7 +51,7 @@ export default function NovoModeloPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -61,10 +66,10 @@ export default function NovoModeloPage() {
         return;
       }
 
-      window.location.href = '/modelos';
+      router.push('/modelos');
     } catch {
       setErro(
-        'Não foi possí­vel salvar o modelo.',
+        'Não foi possível salvar o modelo.',
       );
     } finally {
       setSalvando(false);
@@ -72,35 +77,13 @@ export default function NovoModeloPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Novo modelo
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Novo modelo" backHref="/modelos" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href =
-                '/modelos';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
         <form
           onSubmit={salvar}
-          className="rounded-2xl bg-white p-5 shadow-sm sm:p-8"
+          className="app-card p-5  sm:p-8"
         >
           <div className="space-y-5">
             <div>
@@ -118,7 +101,7 @@ export default function NovoModeloPage() {
                   setNome(e.target.value)
                 }
                 placeholder="Ex.: Modelo 350"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
                 required
               />
             </div>
@@ -138,13 +121,13 @@ export default function NovoModeloPage() {
                   setReferencia(e.target.value)
                 }
                 placeholder="Ex.: REF-350"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
               />
             </div>
           </div>
 
           {erro && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {erro}
             </div>
           )}
@@ -152,7 +135,7 @@ export default function NovoModeloPage() {
           <button
             type="submit"
             disabled={salvando}
-            className="mt-6 w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white disabled:opacity-60"
+            className="btn-primary mt-6 w-full   px-5 py-3 font-semibold  disabled:opacity-60"
           >
             {salvando
               ? 'Salvando...'

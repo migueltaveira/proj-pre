@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pré-Frezado Frederico — Frontend
 
-## Getting Started
+Interface para autenticação, cadastros e fichas de produção, construída com Next.js App Router, React e TypeScript.
 
-First, run the development server:
+## Desenvolvimento
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Na pasta `frontend`, instale as dependências com `npm ci` e execute `npm run dev`.
+O frontend fica disponível em `http://localhost:3000`.
+
+Configure `NEXT_PUBLIC_API_URL` em `.env.local` para indicar o endereço do backend.
+O endereço padrão é `http://localhost:3001`. A API precisa estar disponível para login e operações de cadastro.
+
+## Organização
+
+```text
+src/
+  app/                 Rotas, formulários e estado de cada tela
+    page.tsx           Login
+    dashboard/         Visão geral da produção
+    clientes/          Listagem, cadastro e edição de clientes
+    cores/             Listagem, cadastro e edição de cores
+    materiais/         Listagem, cadastro e edição de materiais
+    modelos/           Listagem, cadastro e edição de modelos
+    pedidos/           Fichas, criação e impressão/PDF
+    globals.css        Importações e regras básicas da aplicação
+  components/
+    app-header.tsx     Marca, menu ativo, título e navegação de retorno
+  hooks/
+    use-load-data.ts   Inicialização assíncrona do carregamento das telas
+  lib/
+    api.ts             Endereço da API
+    pedidos.ts         Formatação de OP e apresentação dos status
+  styles/
+    tokens.css         Paleta e variáveis visuais
+    components.css     Cabeçalho, botões, campos, cartões e login responsivo
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Manutenção
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Altere a paleta em `styles/tokens.css` e os estilos compartilhados em `styles/components.css`.
+- Use `AppHeader` nas telas administrativas. O conteúdo deve ter `id="conteudo"` e `tabIndex={-1}` para o atalho de teclado do cabeçalho.
+- Use `app-page`, `app-card`, `app-input`, `btn-primary` e `btn-voltar` para manter a aparência consistente. Tailwind complementa espaçamento e disposição.
+- Use `Link` para links e `useRouter` para navegação após ações.
+- Passe funções estáveis com `useCallback` para `useLoadData`, incluindo os parâmetros de rota nas dependências. O callback deve tratar falhas da API. O hook cancela o início pendente do carregamento ao desmontar; não cancela requisições já iniciadas.
+- Os estilos específicos das fichas permanecem nas rotas de impressão. As duas apresentações existentes devem ser verificadas antes de unificar esses arquivos. `html2canvas` e `jspdf` são usados na exportação e devem ser mantidos.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Validação
 
-## Learn More
+```bash
+npm run lint
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Para conferir o fluxo completo, valide login, filtros, criação/edição/inativação dos cadastros e criação de pedido com a API ativa. Confira também a impressão e a exportação de PDF em `/pedidos/[id]` e `/pedidos/[id]/imprimir`, além da navegação em telas pequenas.

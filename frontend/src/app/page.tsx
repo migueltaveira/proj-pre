@@ -1,9 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
 import { useState } from 'react';
 import { API_URL } from '@/src/lib/api';
 
 export default function Home() {
+  const router = useRouter();
   const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
   const [carregando, setCarregando] = useState(false);
@@ -37,12 +40,12 @@ export default function Home() {
       localStorage.setItem('token', dados.access_token);
       localStorage.setItem('usuario', JSON.stringify(dados.usuario));
 
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     } catch (erro) {
       console.error(erro);
 
       setErro(
-        'Não foi possível conectar ao servidor. Verifique se o backend está rodando.',
+        'Não foi possível conectar. Tente novamente em alguns instantes.',
       );
     } finally {
       setCarregando(false);
@@ -50,12 +53,15 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-100 px-4">
+    <main className="login-page">
+      <aside className="login-intro">
+        <span className="brand-mark" aria-hidden="true">PF<span>.</span></span>
+        <div><h2>Cada detalhe conta.<br />Cada pedido também.</h2><p>Organize suas fichas e acompanhe cada etapa da produção em um só lugar.</p></div>
+        <small>PRÉ-FREZADO FREDERICO · CONTROLE DE PRODUÇÃO</small>
+      </aside>
+      <section className="login-content" aria-label="Acesso ao sistema">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-900 text-2xl font-bold text-white shadow-lg">
-            PF
-          </div>
 
           <h1 className="mt-4 text-3xl font-bold text-zinc-900">
             Pré-Frezado Frederico
@@ -66,7 +72,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="rounded-3xl bg-white p-6 shadow-xl sm:p-8">
+        <div className="app-card p-6  sm:p-8">
           <h2 className="text-xl font-semibold text-zinc-900">
             Acessar sistema
           </h2>
@@ -91,7 +97,7 @@ export default function Home() {
                 onChange={(e) => setUsuario(e.target.value)}
                 placeholder="Digite seu usuário"
                 autoComplete="username"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
                 required
               />
             </div>
@@ -111,13 +117,13 @@ export default function Home() {
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="Digite sua senha"
                 autoComplete="current-password"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
                 required
               />
             </div>
 
             {erro && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {erro}
               </div>
             )}
@@ -125,7 +131,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={carregando}
-              className="w-full rounded-xl bg-zinc-900 px-4 py-3 font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn-primary w-full   px-4 py-3 font-semibold  transition  active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {carregando ? 'Entrando...' : 'Entrar'}
             </button>
@@ -136,6 +142,7 @@ export default function Home() {
           Pré-Frezado Frederico • Controle de Produção
         </p>
       </div>
+    </section>
     </main>
   );
 }

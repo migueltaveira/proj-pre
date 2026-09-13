@@ -1,6 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { formatarOP, nomeStatus, classeStatus } from '@/src/lib/pedidos';
+
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
+import { useCallback, useState } from 'react';
 import { API_URL } from '@/src/lib/api';
 
 type Usuario = {
@@ -33,6 +41,7 @@ type Resumo = {
 };
 
 export default function Dashboard() {
+  const router = useRouter();
   const [usuario, setUsuario] =
     useState<Usuario | null>(null);
 
@@ -44,11 +53,7 @@ export default function Dashboard() {
 
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarDashboard();
-  }, []);
-
-  async function carregarDashboard() {
+  const carregarDashboard = useCallback(async () => {
     try {
       setErro('');
 
@@ -57,7 +62,7 @@ export default function Dashboard() {
         localStorage.getItem('usuario');
 
       if (!token || !usuarioSalvo) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -69,7 +74,7 @@ export default function Dashboard() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -86,7 +91,7 @@ export default function Dashboard() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -108,46 +113,9 @@ export default function Dashboard() {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
 
-  function sair() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-
-    window.location.href = '/';
-  }
-
-  function formatarOP(numero: number) {
-    return String(numero).padStart(6, '0');
-  }
-
-  function nomeStatus(
-    status: PedidoResumo['status'],
-  ) {
-    if (status === 'EM_PRODUCAO') {
-      return 'Em produção';
-    }
-
-    if (status === 'CONCLUIDO') {
-      return 'Concluído';
-    }
-
-    return 'Cancelado';
-  }
-
-  function classeStatus(
-    status: PedidoResumo['status'],
-  ) {
-    if (status === 'EM_PRODUCAO') {
-      return 'bg-amber-100 text-amber-700';
-    }
-
-    if (status === 'CONCLUIDO') {
-      return 'bg-green-100 text-green-700';
-    }
-
-    return 'bg-red-100 text-red-700';
-  }
+  useLoadData(carregarDashboard);
 
   if (carregando) {
     return (
@@ -160,24 +128,10 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
+    <main className="app-page">
 
-      <header className="app-header">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6">
-          <div>
-            <h1>Pré-Frezado Frederico</h1>
-            <p>Controle de Produção</p>
-          </div>
-
-          <button
-            onClick={sair}
-            className="btn-sair"
-          >
-            Sair
-          </button>
-        </div>
-      </header>
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <AppHeader title="Pré-Frezado Frederico" />
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
 
         <section className="mb-6">
           <h2 className="text-2xl font-bold text-zinc-900">
@@ -190,7 +144,7 @@ export default function Dashboard() {
         </section>
 
         {erro && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {erro}
           </div>
         )}
@@ -250,10 +204,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/pedidos/novo';
+                router.push('/pedidos/novo');
               }}
-              className="rounded-2xl bg-zinc-900 p-5 text-left text-white shadow-sm transition hover:bg-zinc-800"
+              className="app-card production-action p-5 text-left transition"
             >
               <p className="text-sm text-zinc-300">
                 Produção
@@ -270,10 +223,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/pedidos';
+                router.push('/pedidos');
               }}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm transition hover:shadow-md"
+              className="app-card p-5 text-left  transition"
             >
               <p className="text-sm text-zinc-500">
                 Produção
@@ -300,10 +252,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/clientes';
+                router.push('/clientes');
               }}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm transition hover:shadow-md"
+              className="app-card p-5 text-left  transition"
             >
               <p className="text-sm text-zinc-500">
                 Cadastro
@@ -316,10 +267,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/modelos';
+                router.push('/modelos');
               }}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm transition hover:shadow-md"
+              className="app-card p-5 text-left  transition"
             >
               <p className="text-sm text-zinc-500">
                 Cadastro
@@ -332,10 +282,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/materiais';
+                router.push('/materiais');
               }}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm transition hover:shadow-md"
+              className="app-card p-5 text-left  transition"
             >
               <p className="text-sm text-zinc-500">
                 Cadastro
@@ -348,10 +297,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/cores';
+                router.push('/cores');
               }}
-              className="rounded-2xl bg-white p-5 text-left shadow-sm transition hover:shadow-md"
+              className="app-card p-5 text-left  transition"
             >
               <p className="text-sm text-zinc-500">
                 Cadastro
@@ -381,8 +329,7 @@ export default function Dashboard() {
 
             <button
               onClick={() => {
-                window.location.href =
-                  '/pedidos';
+                router.push('/pedidos');
               }}
               className="text-sm font-medium text-zinc-600 transition hover:text-zinc-900"
             >
@@ -393,7 +340,7 @@ export default function Dashboard() {
 
           {!resumo ||
           resumo.ultimosPedidos.length === 0 ? (
-            <div className="rounded-2xl bg-white p-8 text-center text-sm text-zinc-500 shadow-sm">
+            <div className="app-card p-8 text-center text-sm text-zinc-500">
               Nenhuma ficha cadastrada.
             </div>
           ) : (
@@ -404,10 +351,9 @@ export default function Dashboard() {
                   <button
                     key={pedido.id}
                     onClick={() => {
-                      window.location.href =
-                        `/pedidos/${pedido.id}`;
+                      router.push(`/pedidos/${pedido.id}`);
                     }}
-                    className="flex w-full items-center justify-between gap-4 rounded-2xl bg-white p-4 text-left shadow-sm transition hover:shadow-md"
+                    className="app-card flex w-full items-center justify-between gap-4   p-4 text-left  transition"
                   >
                     <div>
                       <p className="text-xs font-medium text-zinc-500">

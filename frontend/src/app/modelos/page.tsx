@@ -1,8 +1,14 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 type Modelo = {
   id: number;
@@ -12,23 +18,20 @@ type Modelo = {
 };
 
 export default function ModelosPage() {
+  const router = useRouter();
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [busca, setBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarModelos();
-  }, []);
-
-  async function carregarModelos() {
+  const carregarModelos = useCallback(async () => {
     try {
       setErro('');
 
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -48,11 +51,13 @@ export default function ModelosPage() {
       const dados = await resposta.json();
       setModelos(dados);
     } catch {
-      setErro('Não foi possí­vel carregar os modelos.');
+      setErro('Não foi possível carregar os modelos.');
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
+
+  useLoadData(carregarModelos);
 
   async function inativarModelo(id: number) {
     const confirmar = window.confirm(
@@ -82,7 +87,7 @@ export default function ModelosPage() {
 
       await carregarModelos();
     } catch {
-      setErro('Não foi possí­vel inativar o modelo.');
+      setErro('Não foi possível inativar o modelo.');
     }
   }
 
@@ -100,31 +105,10 @@ export default function ModelosPage() {
   });
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Modelos
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Modelos" backHref="/dashboard" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href = '/dashboard';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-zinc-900">
@@ -138,7 +122,7 @@ export default function ModelosPage() {
 
           <button
             onClick={() => {
-              window.location.href = '/modelos/novo';
+              router.push('/modelos/novo');
             }}
             className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
@@ -148,25 +132,25 @@ export default function ModelosPage() {
 
         <div className="mb-5">
           <input
-            value={busca}
+            aria-label="Buscar registros" value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar modelo ou referência..."
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none sm:max-w-md"
+            className="app-input sm:max-w-md"
           />
         </div>
 
         {erro && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {erro}
           </div>
         )}
 
         {carregando ? (
-          <div className="rounded-2xl bg-white p-6">
+          <div className="app-card p-6">
             Carregando...
           </div>
         ) : modelosFiltrados.length === 0 ? (
-          <div className="rounded-2xl bg-white p-8 text-center text-zinc-500">
+          <div className="app-card p-8 text-center text-zinc-500">
             Nenhum modelo encontrado.
           </div>
         ) : (
@@ -206,8 +190,7 @@ export default function ModelosPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
-                        window.location.href =
-                          `/modelos/${modelo.id}/editar`;
+                        router.push(`/modelos/${modelo.id}/editar`);
                       }}
                       className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
                     >

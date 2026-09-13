@@ -1,8 +1,16 @@
 'use client';
 
+import { formatarOP, nomeStatus, classeStatus } from '@/src/lib/pedidos';
+
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 type Pedido = {
   id: number;
@@ -36,22 +44,19 @@ type Pedido = {
 };
 
 export default function PedidosPage() {
+  const router = useRouter();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarPedidos();
-  }, []);
-
-  async function carregarPedidos() {
+  const carregarPedidos = useCallback(async () => {
     try {
       setErro('');
 
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -68,7 +73,7 @@ export default function PedidosPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -81,67 +86,20 @@ export default function PedidosPage() {
       setPedidos(dados);
     } catch {
       setErro(
-        'Não foi possí­vel carregar os pedidos.',
+        'Não foi possível carregar os pedidos.',
       );
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
 
-  function formatarOP(numero: number) {
-    return String(numero).padStart(6, '0');
-  }
-
-  function nomeStatus(status: Pedido['status']) {
-    if (status === 'EM_PRODUCAO') {
-      return 'Em produção';
-    }
-
-    if (status === 'CONCLUIDO') {
-      return 'Concluído';
-    }
-
-    return 'Cancelado';
-  }
-
-  function classeStatus(status: Pedido['status']) {
-    if (status === 'EM_PRODUCAO') {
-      return 'bg-amber-100 text-amber-700';
-    }
-
-    if (status === 'CONCLUIDO') {
-      return 'bg-green-100 text-green-700';
-    }
-
-    return 'bg-red-100 text-red-700';
-  }
+  useLoadData(carregarPedidos);
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Pedidos
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Pedidos" backHref="/dashboard" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href = '/dashboard';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-zinc-900">
@@ -155,7 +113,7 @@ export default function PedidosPage() {
 
           <button
             onClick={() => {
-              window.location.href = '/pedidos/novo';
+              router.push('/pedidos/novo');
             }}
             className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
@@ -164,17 +122,17 @@ export default function PedidosPage() {
         </div>
 
         {erro && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {erro}
           </div>
         )}
 
         {carregando ? (
-          <div className="rounded-2xl bg-white p-6">
+          <div className="app-card p-6">
             Carregando...
           </div>
         ) : pedidos.length === 0 ? (
-          <div className="rounded-2xl bg-white p-8 text-center text-zinc-500">
+          <div className="app-card p-8 text-center text-zinc-500">
             Nenhuma ficha cadastrada.
           </div>
         ) : (
@@ -190,10 +148,9 @@ export default function PedidosPage() {
                 <button
                   key={pedido.id}
                   onClick={() => {
-                    window.location.href =
-                      `/pedidos/${pedido.id}`;
+                    router.push(`/pedidos/${pedido.id}`);
                   }}
-                  className="w-full rounded-2xl bg-white p-5 text-left shadow-sm transition hover:shadow-md"
+                  className="app-card w-full   p-5 text-left  transition"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>

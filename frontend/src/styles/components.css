@@ -1,0 +1,50 @@
+.app-page { min-height: 100vh; background: var(--background); }
+.app-header { background: var(--card); border-bottom: 1px solid var(--border); }
+.header-content, .app-nav, .page-heading { max-width: 1152px; margin: auto; padding-inline: 24px; }
+.header-content { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 22px; }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 700; text-decoration: none; }
+.brand small { display: block; margin-top: 3px; font-size: 9px; letter-spacing: .18em; color: var(--text-muted); }
+.brand-mark { display: grid; place-content: center; position: relative; width: 44px; height: 44px; border-radius: 12px; background: var(--primary); color: white; font-size: 21px; }
+.brand-mark span { position: absolute; bottom: 5px; right: 5px; color: #bce7a3; }
+.app-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; }
+.app-nav a { padding: 9px 16px; border-radius: 8px; color: var(--text-muted); font-size: 13px; font-weight: 600; white-space: nowrap; text-decoration: none; }
+.app-nav a:hover { background: #f3f7f7; color: var(--primary); }
+.app-nav a[aria-current] { background: #e5f1f1; color: var(--primary); }
+.page-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 24px; border-top: 1px solid var(--border); }
+.page-heading p { font-size: 10px; font-weight: 700; letter-spacing: .15em; color: var(--text-muted); margin-bottom: 6px; }
+.page-heading h1 { font-size: clamp(23px, 3vw, 30px); font-weight: 700; letter-spacing: -.04em; }
+.app-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 2px 4px #18323903; }
+button.app-card { cursor: pointer; transition: border-color .18s, box-shadow .18s; }
+button.app-card:hover { border-color: #8fb8c0; box-shadow: 0 4px 16px #1832390a; }
+.production-action { display: block; background: var(--primary); color: white; border-color: var(--primary); }
+.production-action:hover { background: var(--primary-hover); }
+.btn-primary, .btn-voltar, .btn-sair { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 10px 17px; border-radius: 9px; font-size: 13px; font-weight: 600; text-decoration: none; cursor: pointer; transition: background .18s; }
+.btn-primary { background: var(--primary); color: white; border: 1px solid transparent; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-voltar, .btn-sair { border: 1px solid var(--border); background: white; color: var(--foreground); }
+.btn-voltar:hover, .btn-sair:hover { background: #edf3f3; }
+.app-input { width: 100%; min-height: 46px; padding: 11px 14px; border: 1px solid #cad8db; border-radius: 9px; color: var(--foreground); background: white; font-size: 14px; transition: border-color .18s, box-shadow .18s; }
+.app-input::placeholder { color: #819397; }
+.app-input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px #22879a18; }
+textarea.app-input { min-height: 110px; resize: vertical; }
+.skip-link { position: fixed; top: -100px; left: 16px; z-index: 100; padding: 12px; background: white; }
+.skip-link:focus { top: 12px; }
+.login-page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: #f7f9f8; }
+.login-intro { padding: clamp(32px, 6vw, 96px); background: #123e49; color: white; display: flex; flex-direction: column; justify-content: space-between; gap: 64px; }
+.login-intro .brand-mark { background: #ffffff15; width: 60px; height: 60px; font-size: 27px; }
+.login-intro h2 { max-width: 540px; font-size: clamp(36px, 4vw, 60px); line-height: 1.12; font-weight: 600; letter-spacing: -.045em; }
+.login-intro p { max-width: 360px; color: #b8ced1; line-height: 1.8; margin-top: 24px; }
+.login-intro small { color: #b8ced1; letter-spacing: .12em; font-size: 10px; }
+.login-content { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+@media (max-width: 700px) {
+  .header-content, .app-nav, .page-heading { padding-inline: 16px; }
+  .brand { font-size: 12px; gap: 8px; }
+  .btn-sair { font-size: 11px; padding-inline: 10px; }
+  .app-nav { gap: 2px; }
+  .app-nav a { padding-inline: 12px; }
+  .login-page { grid-template-columns: 1fr; }
+  .login-intro { gap: 24px; padding: 28px; }
+  .login-intro h2 { font-size: 32px; }
+  .login-intro p, .login-intro > small { display: none; }
+}
+@media print { .app-header { display: none; } }

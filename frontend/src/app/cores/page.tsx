@@ -1,8 +1,14 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 type Cor = {
   id: number;
@@ -11,23 +17,20 @@ type Cor = {
 };
 
 export default function CoresPage() {
+  const router = useRouter();
   const [cores, setCores] = useState<Cor[]>([]);
   const [busca, setBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarCores();
-  }, []);
-
-  async function carregarCores() {
+  const carregarCores = useCallback(async () => {
     try {
       setErro('');
 
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -43,7 +46,7 @@ export default function CoresPage() {
       if (resposta.status === 401) {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -55,11 +58,13 @@ export default function CoresPage() {
 
       setCores(dados);
     } catch {
-      setErro('Não foi possÃ­vel carregar as cores.');
+      setErro('Não foi possível carregar as cores.');
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
+
+  useLoadData(carregarCores);
 
   async function inativarCor(id: number) {
     const confirmar = window.confirm(
@@ -74,7 +79,7 @@ export default function CoresPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -94,7 +99,7 @@ export default function CoresPage() {
 
       await carregarCores();
     } catch {
-      setErro('Não foi possÃ­vel inativar a cor.');
+      setErro('Não foi possível inativar a cor.');
     }
   }
 
@@ -105,31 +110,10 @@ export default function CoresPage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Cores
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Cores" backHref="/dashboard" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href = '/dashboard';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-zinc-900">
@@ -143,7 +127,7 @@ export default function CoresPage() {
 
           <button
             onClick={() => {
-              window.location.href = '/cores/novo';
+              router.push('/cores/novo');
             }}
             className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
@@ -153,25 +137,25 @@ export default function CoresPage() {
 
         <div className="mb-5">
           <input
-            value={busca}
+            aria-label="Buscar registros" value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder="Buscar cor..."
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none sm:max-w-md"
+            className="app-input sm:max-w-md"
           />
         </div>
 
         {erro && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {erro}
           </div>
         )}
 
         {carregando ? (
-          <div className="rounded-2xl bg-white p-6">
+          <div className="app-card p-6">
             Carregando...
           </div>
         ) : coresFiltradas.length === 0 ? (
-          <div className="rounded-2xl bg-white p-8 text-center text-zinc-500">
+          <div className="app-card p-8 text-center text-zinc-500">
             Nenhuma cor encontrada.
           </div>
         ) : (
@@ -201,8 +185,7 @@ export default function CoresPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
-                        window.location.href =
-                          `/cores/${cor.id}/editar`;
+                        router.push(`/cores/${cor.id}/editar`);
                       }}
                       className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
                     >

@@ -1,6 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
+import { useCallback, useState } from 'react';
 import { API_URL } from '@/src/lib/api';
 
 type Cliente = {
@@ -13,23 +19,20 @@ type Cliente = {
 };
 
 export default function ClientesPage() {
+  const router = useRouter();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
   const [busca, setBusca] = useState('');
 
-  useEffect(() => {
-    carregarClientes();
-  }, []);
-
-  async function carregarClientes() {
+  const carregarClientes = useCallback(async () => {
     try {
       setErro('');
 
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -46,7 +49,7 @@ export default function ClientesPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -64,7 +67,9 @@ export default function ClientesPage() {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
+
+  useLoadData(carregarClientes);
 
   async function inativarCliente(id: number) {
     const confirmar = window.confirm(
@@ -79,7 +84,7 @@ export default function ClientesPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -116,31 +121,10 @@ export default function ClientesPage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Clientes
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Clientes" backHref="/dashboard" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href = '/dashboard';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-zinc-900">
@@ -154,8 +138,7 @@ export default function ClientesPage() {
 
           <button
             onClick={() => {
-              window.location.href =
-                '/clientes/novo';
+              router.push('/clientes/novo');
             }}
             className="btn-primary w-full px-5 py-3 sm:w-auto"
           >
@@ -165,27 +148,27 @@ export default function ClientesPage() {
 
         <div className="mb-5">
           <input
-            value={busca}
+            aria-label="Buscar registros" value={busca}
             onChange={(e) =>
               setBusca(e.target.value)
             }
             placeholder="Buscar cliente..."
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900 outline-none sm:max-w-md"
+            className="app-input sm:max-w-md"
           />
         </div>
 
         {erro && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {erro}
           </div>
         )}
 
         {carregando ? (
-          <div className="rounded-2xl bg-white p-6">
+          <div className="app-card p-6">
             Carregando...
           </div>
         ) : clientesFiltrados.length === 0 ? (
-          <div className="rounded-2xl bg-white p-8 text-center text-zinc-500">
+          <div className="app-card p-8 text-center text-zinc-500">
             Nenhum cliente encontrado.
           </div>
         ) : (
@@ -240,8 +223,7 @@ export default function ClientesPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
-                        window.location.href =
-                          `/clientes/${cliente.id}/editar`;
+                        router.push(`/clientes/${cliente.id}/editar`);
                       }}
                       className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
                     >

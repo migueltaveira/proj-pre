@@ -1,6 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { useCallback, useState } from 'react';
 import { useParams } from 'next/navigation';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -39,6 +43,7 @@ type Pedido = {
 };
 
 export default function ImprimirPedidoPage() {
+  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
@@ -47,18 +52,14 @@ export default function ImprimirPedidoPage() {
   const [erro, setErro] = useState('');
   const [compartilhando, setCompartilhando] = useState(false);
 
-  useEffect(() => {
-    carregarPedido();
-  }, []);
-
-  async function carregarPedido() {
+  const carregarPedido = useCallback(async () => {
     try {
       setErro('');
 
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -75,7 +76,7 @@ export default function ImprimirPedidoPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -91,7 +92,9 @@ export default function ImprimirPedidoPage() {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [id, router]);
+
+  useLoadData(carregarPedido);
 
   function formatarOP(numero: number) {
     return String(numero).padStart(6, '0');
@@ -223,7 +226,7 @@ export default function ImprimirPedidoPage() {
           <button
             type="button"
             onClick={() => {
-              window.location.href = '/pedidos';
+              router.push('/pedidos');
             }}
             className="mt-4 rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white"
           >

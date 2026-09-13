@@ -1,9 +1,14 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { useState } from 'react';
 import { API_URL } from '@/src/lib/api';
 
 export default function NovoClientePage() {
+  const router = useRouter();
   const [nome, setNome] = useState('');
   const [documento, setDocumento] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -22,7 +27,7 @@ export default function NovoClientePage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -44,7 +49,7 @@ export default function NovoClientePage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -55,7 +60,7 @@ export default function NovoClientePage() {
         return;
       }
 
-      window.location.href = '/clientes';
+      router.push('/clientes');
     } catch (erro) {
       console.error(erro);
 
@@ -66,34 +71,13 @@ export default function NovoClientePage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Novo cliente
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Novo cliente" backHref="/clientes" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href = '/clientes';
-            }}
-            className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
         <form
           onSubmit={salvar}
-          className="rounded-2xl bg-white p-5 shadow-sm sm:p-8"
+          className="app-card p-5  sm:p-8"
         >
           <div className="space-y-5">
             <div>
@@ -109,7 +93,7 @@ export default function NovoClientePage() {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Nome do cliente"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
                 required
               />
             </div>
@@ -127,7 +111,7 @@ export default function NovoClientePage() {
                 value={documento}
                 onChange={(e) => setDocumento(e.target.value)}
                 placeholder="CPF, CNPJ ou outro"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
               />
             </div>
 
@@ -145,7 +129,7 @@ export default function NovoClientePage() {
                 value={telefone}
                 onChange={(e) => setTelefone(e.target.value)}
                 placeholder="Telefone do cliente"
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
               />
             </div>
 
@@ -163,12 +147,12 @@ export default function NovoClientePage() {
                 onChange={(e) => setObservacoes(e.target.value)}
                 rows={4}
                 placeholder="Informações adicionais"
-                className="w-full resize-none rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+                className="app-input"
               />
             </div>
 
             {erro && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {erro}
               </div>
             )}

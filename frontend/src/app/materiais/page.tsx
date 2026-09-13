@@ -1,8 +1,14 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 type Material = {
   id: number;
@@ -11,23 +17,20 @@ type Material = {
 };
 
 export default function MateriaisPage() {
+  const router = useRouter();
   const [materiais, setMateriais] = useState<Material[]>([]);
   const [busca, setBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarMateriais();
-  }, []);
-
-  async function carregarMateriais() {
+  const carregarMateriais = useCallback(async () => {
     try {
       setErro('');
 
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -46,11 +49,13 @@ export default function MateriaisPage() {
 
       setMateriais(await resposta.json());
     } catch {
-      setErro('Não foi possí­vel carregar os materiais.');
+      setErro('Não foi possível carregar os materiais.');
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
+
+  useLoadData(carregarMateriais);
 
   async function inativarMaterial(id: number) {
     if (!window.confirm('Deseja realmente inativar este material?')) {
@@ -76,7 +81,7 @@ export default function MateriaisPage() {
 
       await carregarMateriais();
     } catch {
-      setErro('Não foi possí­vel inativar o material.');
+      setErro('Não foi possível inativar o material.');
     }
   }
 
@@ -85,24 +90,10 @@ export default function MateriaisPage() {
   );
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">Materiais</h1>
-            <p className="text-xs text-zinc-500">Pré-Frezado Frederico</p>
-          </div>
+    <main className="app-page">
+      <AppHeader title="Materiais" backHref="/dashboard" />
 
-          <button
-            onClick={() => (window.location.href = '/dashboard')}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-6xl px-4 py-6">
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-zinc-900">
@@ -111,18 +102,18 @@ export default function MateriaisPage() {
           </div>
 
           <button
-            onClick={() => (window.location.href = '/materiais/novo')}
-            className="rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white"
+            onClick={() => (router.push('/materiais/novo'))}
+            className="btn-primary px-5 py-3 font-semibold"
           >
             + Novo material
           </button>
         </div>
 
         <input
-          value={busca}
+          aria-label="Buscar registros" value={busca}
           onChange={(e) => setBusca(e.target.value)}
           placeholder="Buscar material..."
-          className="mb-5 w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 sm:max-w-md"
+          className="app-input sm:max-w-md"
         />
 
         {erro && (
@@ -160,8 +151,7 @@ export default function MateriaisPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() =>
-                        (window.location.href =
-                          `/materiais/${material.id}/editar`)
+                        (router.push(`/materiais/${material.id}/editar`))
                       }
                       className="btn-voltar"
                     >

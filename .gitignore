@@ -1,4 +1,5 @@
 # Compiled output
+*.tsbuildinfo
 dist/
 build/
 frontend/.next/

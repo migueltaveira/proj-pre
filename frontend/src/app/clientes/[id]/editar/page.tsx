@@ -1,14 +1,20 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import {
-  useEffect,
-  useState,
+  useCallback, useState,
 } from 'react';
 import { API_URL } from '@/src/lib/api';
 
 import { useParams } from 'next/navigation';
 
 export default function EditarClientePage() {
+  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
@@ -30,16 +36,12 @@ export default function EditarClientePage() {
 
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarCliente();
-  }, []);
-
-  async function carregarCliente() {
+  const carregarCliente = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -72,7 +74,9 @@ export default function EditarClientePage() {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [id, router]);
+
+  useLoadData(carregarCliente);
 
   async function salvar(
     e: React.FormEvent,
@@ -86,7 +90,7 @@ export default function EditarClientePage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -123,7 +127,7 @@ export default function EditarClientePage() {
         return;
       }
 
-      window.location.href = '/clientes';
+      router.push('/clientes');
     } catch {
       setErro(
         'Não foi possível atualizar o cliente.',
@@ -142,37 +146,15 @@ export default function EditarClientePage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
+    <main className="app-page">
 
-      <header className="app-header">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Editar cliente
-            </h1>
+      <AppHeader title="Editar cliente" backHref="/clientes" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href =
-                '/clientes';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
 
         <form
           onSubmit={salvar}
-          className="rounded-2xl bg-white p-5 shadow-sm sm:p-8"
+          className="app-card p-5  sm:p-8"
         >
 
           <div className="space-y-5">
@@ -188,7 +170,7 @@ export default function EditarClientePage() {
                   setNome(e.target.value)
                 }
                 required
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+                className="app-input"
               />
             </div>
 
@@ -204,7 +186,7 @@ export default function EditarClientePage() {
                     e.target.value,
                   )
                 }
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+                className="app-input"
               />
             </div>
 
@@ -220,7 +202,7 @@ export default function EditarClientePage() {
                     e.target.value,
                   )
                 }
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+                className="app-input"
               />
             </div>
 
@@ -237,7 +219,7 @@ export default function EditarClientePage() {
                   )
                 }
                 rows={4}
-                className="w-full resize-none rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+                className="app-input"
               />
             </div>
 
@@ -267,7 +249,7 @@ export default function EditarClientePage() {
           </div>
 
           {erro && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {erro}
             </div>
           )}
@@ -275,7 +257,7 @@ export default function EditarClientePage() {
           <button
             type="submit"
             disabled={salvando}
-            className="mt-6 w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white disabled:opacity-60"
+            className="btn-primary mt-6 w-full   px-5 py-3 font-semibold  disabled:opacity-60"
           >
             {salvando
               ? 'Salvando...'

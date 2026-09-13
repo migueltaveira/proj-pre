@@ -1,0 +1,10 @@
+:root {
+  --background: #f3f5f5;
+  --foreground: #183239;
+  --primary: #145563;
+  --primary-hover: #0d424e;
+  --card: #fff;
+  --border: #dce5e5;
+  --text-muted: #63777c;
+  --focus: #22879a;
+}

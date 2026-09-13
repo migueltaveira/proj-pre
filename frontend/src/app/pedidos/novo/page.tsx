@@ -1,10 +1,15 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
 import {
-  useEffect,
-  useMemo,
+  useCallback, useMemo,
   useState,
 } from 'react';
 
@@ -26,6 +31,7 @@ const tamanhosDisponiveis = [
 ];
 
 export default function NovoPedidoPage() {
+  const router = useRouter();
   const [clientes, setClientes] = useState<Opcao[]>([]);
   const [modelos, setModelos] = useState<Modelo[]>([]);
   const [materiais, setMateriais] = useState<Opcao[]>([]);
@@ -50,16 +56,12 @@ export default function NovoPedidoPage() {
 
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarCadastros();
-  }, []);
-
-  async function carregarCadastros() {
+  const carregarCadastros = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -100,7 +102,7 @@ export default function NovoPedidoPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -150,12 +152,14 @@ export default function NovoPedidoPage() {
       );
     } catch {
       setErro(
-        'Não foi possí­vel carregar os cadastros.',
+        'Não foi possível carregar os cadastros.',
       );
     } finally {
       setCarregando(false);
     }
-  }
+  }, [router]);
+
+  useLoadData(carregarCadastros);
 
   const totalPares = useMemo(() => {
     return Object.values(
@@ -196,7 +200,7 @@ export default function NovoPedidoPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -244,7 +248,7 @@ export default function NovoPedidoPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -258,11 +262,10 @@ export default function NovoPedidoPage() {
         return;
       }
 
-      window.location.href =
-        `/pedidos/${dados.id}`;
+      router.push(`/pedidos/${dados.id}`);
     } catch {
       setErro(
-        'Não foi possí­vel criar a ficha.',
+        'Não foi possível criar a ficha.',
       );
     } finally {
       setSalvando(false);
@@ -280,38 +283,15 @@ export default function NovoPedidoPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Nova ficha
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Nova ficha" backHref="/pedidos" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              window.location.href =
-                '/pedidos';
-            }}
-            className="btn-voltar-header"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-5xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-6">
         <form
           onSubmit={salvar}
           className="space-y-6"
         >
-          <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
+          <section className="app-card p-5  sm:p-8">
             <h2 className="text-lg font-semibold text-zinc-900">
               Dados da ficha
             </h2>
@@ -330,7 +310,7 @@ export default function NovoPedidoPage() {
                     )
                   }
                   required
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900"
+                  className="app-input"
                 >
                   <option value="">
                     Selecione
@@ -360,7 +340,7 @@ export default function NovoPedidoPage() {
                     )
                   }
                   required
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900"
+                  className="app-input"
                 >
                   <option value="">
                     Selecione
@@ -393,7 +373,7 @@ export default function NovoPedidoPage() {
                     )
                   }
                   required
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900"
+                  className="app-input"
                 >
                   <option value="">
                     Selecione
@@ -421,7 +401,7 @@ export default function NovoPedidoPage() {
                     setCorId(e.target.value)
                   }
                   required
-                  className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-900"
+                  className="app-input"
                 >
                   <option value="">
                     Selecione
@@ -440,7 +420,7 @@ export default function NovoPedidoPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
+          <section className="app-card p-5  sm:p-8">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-zinc-900">
@@ -470,7 +450,7 @@ export default function NovoPedidoPage() {
                     key={tamanho}
                     className="overflow-hidden rounded-xl border border-zinc-200"
                   >
-                    <div className="bg-zinc-900 py-2 text-center font-semibold text-white">
+                    <div className="btn-primary py-2 text-center font-semibold">
                       {tamanho}
                     </div>
 
@@ -490,7 +470,7 @@ export default function NovoPedidoPage() {
                         )
                       }
                       placeholder="0"
-                      className="w-full px-2 py-3 text-center text-lg font-semibold text-zinc-900 outline-none"
+                      className="app-input"
                     />
                   </div>
                 ),
@@ -498,7 +478,7 @@ export default function NovoPedidoPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl bg-white p-5 shadow-sm sm:p-8">
+          <section className="app-card p-5  sm:p-8">
             <label className="mb-2 block text-sm font-medium text-zinc-700">
               Observações
             </label>
@@ -512,12 +492,12 @@ export default function NovoPedidoPage() {
               }
               rows={5}
               placeholder="Informações adicionais da ficha"
-              className="w-full resize-none rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+              className="app-input"
             />
           </section>
 
           {erro && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {erro}
             </div>
           )}
@@ -525,7 +505,7 @@ export default function NovoPedidoPage() {
           <button
             type="submit"
             disabled={salvando}
-            className="w-full rounded-xl bg-zinc-900 px-5 py-4 text-base font-semibold text-white disabled:opacity-60"
+            className="btn-primary w-full   px-5 py-4 text-base font-semibold  disabled:opacity-60"
           >
             {salvando
               ? 'Criando ficha...'

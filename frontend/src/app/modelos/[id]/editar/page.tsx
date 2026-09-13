@@ -1,11 +1,18 @@
 'use client';
 
+import { useLoadData } from '@/src/hooks/use-load-data';
+
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 export default function EditarModeloPage() {
+  const router = useRouter();
   const params = useParams();
   const id = params.id as string;
 
@@ -17,16 +24,12 @@ export default function EditarModeloPage() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    carregarModelo();
-  }, []);
-
-  async function carregarModelo() {
+  const carregarModelo = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -53,7 +56,9 @@ export default function EditarModeloPage() {
     } finally {
       setCarregando(false);
     }
-  }
+  }, [id, router]);
+
+  useLoadData(carregarModelo);
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault();
@@ -65,7 +70,7 @@ export default function EditarModeloPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -95,7 +100,7 @@ export default function EditarModeloPage() {
         return;
       }
 
-      window.location.href = '/modelos';
+      router.push('/modelos');
     } catch {
       setErro(
         'Não foi possível atualizar o modelo.',
@@ -114,34 +119,13 @@ export default function EditarModeloPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Editar modelo
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Editar modelo" backHref="/modelos" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href = '/modelos';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
         <form
           onSubmit={salvar}
-          className="rounded-2xl bg-white p-5 shadow-sm sm:p-8"
+          className="app-card p-5  sm:p-8"
         >
           <div className="space-y-5">
             <div>
@@ -155,7 +139,7 @@ export default function EditarModeloPage() {
                   setNome(e.target.value)
                 }
                 required
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+                className="app-input"
               />
             </div>
 
@@ -169,7 +153,7 @@ export default function EditarModeloPage() {
                 onChange={(e) =>
                   setReferencia(e.target.value)
                 }
-                className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none"
+                className="app-input"
               />
             </div>
 
@@ -194,7 +178,7 @@ export default function EditarModeloPage() {
           </div>
 
           {erro && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {erro}
             </div>
           )}
@@ -202,7 +186,7 @@ export default function EditarModeloPage() {
           <button
             type="submit"
             disabled={salvando}
-            className="mt-6 w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white disabled:opacity-60"
+            className="btn-primary mt-6 w-full   px-5 py-3 font-semibold  disabled:opacity-60"
           >
             {salvando
               ? 'Salvando...'

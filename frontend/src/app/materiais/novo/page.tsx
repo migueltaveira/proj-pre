@@ -1,10 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+
+import { AppHeader } from '@/src/components/app-header';
+
 import { API_URL } from '@/src/lib/api';
 
 import { useState } from 'react';
 
 export default function NovoMaterialPage() {
+  const router = useRouter();
   const [nome, setNome] = useState('');
   const [erro, setErro] = useState('');
   const [salvando, setSalvando] = useState(false);
@@ -21,7 +26,7 @@ export default function NovoMaterialPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -43,7 +48,7 @@ export default function NovoMaterialPage() {
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
 
-        window.location.href = '/';
+        router.push('/');
         return;
       }
 
@@ -58,10 +63,10 @@ export default function NovoMaterialPage() {
         return;
       }
 
-      window.location.href = '/materiais';
+      router.push('/materiais');
     } catch {
       setErro(
-        'Não foi possí­vel salvar o material.',
+        'Não foi possível salvar o material.',
       );
     } finally {
       setSalvando(false);
@@ -69,35 +74,13 @@ export default function NovoMaterialPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-100">
-      <header className="app-header">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900">
-              Novo material
-            </h1>
+    <main className="app-page">
+      <AppHeader title="Novo material" backHref="/materiais" />
 
-            <p className="text-xs text-zinc-500">
-              Pré-Frezado Frederico
-            </p>
-          </div>
-
-          <button
-            onClick={() => {
-              window.location.href =
-                '/materiais';
-            }}
-            className="btn-voltar"
-          >
-            Voltar
-          </button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-3xl px-4 py-6">
+      <div id="conteudo" tabIndex={-1} className="mx-auto max-w-3xl px-4 py-6">
         <form
           onSubmit={salvar}
-          className="rounded-2xl bg-white p-5 shadow-sm sm:p-8"
+          className="app-card p-5  sm:p-8"
         >
           <div>
             <label
@@ -114,13 +97,13 @@ export default function NovoMaterialPage() {
                 setNome(e.target.value)
               }
               placeholder="Ex.: EVA"
-              className="w-full rounded-xl border border-zinc-300 px-4 py-3 text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-200"
+              className="app-input"
               required
             />
           </div>
 
           {erro && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               {erro}
             </div>
           )}
@@ -128,7 +111,7 @@ export default function NovoMaterialPage() {
           <button
             type="submit"
             disabled={salvando}
-            className="mt-6 w-full rounded-xl bg-zinc-900 px-5 py-3 font-semibold text-white disabled:opacity-60"
+            className="btn-primary mt-6 w-full   px-5 py-3 font-semibold  disabled:opacity-60"
           >
             {salvando
               ? 'Salvando...'
